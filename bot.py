@@ -19,7 +19,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 log = logging.getLogger(__name__)
 
 # الإعدادات والمتغيرات الأساسية
-TOKEN = "8968520359:AAGNBUm9GssXoB6SeZaUPH6IAfxC0aFJQo"
+TOKEN = "8968520359:AAESqyjdclJazAWLauGlTOzxdW_79rNGxPU"
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
 ALLOWED_USERS = {INITIAL_ADMIN_ID}
 admin_adding_state = set()
