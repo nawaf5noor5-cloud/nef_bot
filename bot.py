@@ -1,3 +1,53 @@
+import logging
+import random
+import threading
+from flask import Flask
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+    filters
+)
+
+# إعداد السجلات
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+log = logging.getLogger(__name__)
+
+# الإعدادات والمتغيرات الأساسية
+TOKEN = "8968520359:AAHGU6zeCoEFvHwKkln8xMBGM0KaYHATf8Y"
+INITIAL_ADMIN_ID = "5300057039"  # معرف المالك
+ALLOWED_USERS = {INITIAL_ADMIN_ID}
+admin_adding_state = set()
+user_selections = {}
+
+MARKETS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "Gold", "Silver", "Tesla", "Apple", "Amazon", "Smarty", "Football"]
+TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق", "15 دقيقة", "30 دقيقة"]
+
+def is_authorized(user_id: str):
+    return user_id in ALLOWED_USERS or user_id == str(INITIAL_ADMIN_ID)
+    
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    
+    if not is_authorized(user_id):
+        await update.message.reply_text("❌ غير مَصرح لك استخدام هذا البوت.")
+        return
+
+    keyboard = [
+        [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
+        [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    welcome_text = (
+        "🤖 **بوت التحليل الذكي وخبير التداول**\n\n"
+        "🟢 **الحالة:** حساب نشط\n\n"
+        "👇 اضغط على الزر بالأسفل لبدء اختيار الأصول:"
+    )
+    await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
 # بعد دالة start_command وأزرار الترحيب، ضع دالة الأزرار:
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
