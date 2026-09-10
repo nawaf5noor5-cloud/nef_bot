@@ -85,7 +85,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-   if data == "admin_panel":
+  if data == "admin_panel":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_adding_state.discard(user_id)
             admin_deleting_state.discard(user_id)
@@ -103,6 +103,32 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         else:
             await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
+        return
+
+    if data == "remove_user":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            admin_deleting_state.add(user_id)
+            admin_adding_state.discard(user_id)
+            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
+            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                f"🗑️ **حذف مستخدم:**\nالمستخدمون الحاليون:\n{users_list}\n\nالرجاء إرسال **اليوزر أو المعرف المراد حذفه** في رسالة الآن:",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
+        return
+
+    if data == "list_users":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
+            keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                f"📋 **قائمة المستخدمين المسموح لهم:**\n{users_list}",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
         return
 
     if data == "remove_user":
