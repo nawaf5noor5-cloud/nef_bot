@@ -2,6 +2,8 @@ import os
 import json
 import random
 import logging
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
@@ -248,7 +250,17 @@ async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYP
         else:
             await update.message.reply_text("❌ هذا المستخدم غير موجود في القائمة.")
         context.user_data['waiting_for_user_remove'] = False
+خادم ويب وهمي لإرضاء منصة Render
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is active and running!")
 
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(('0.0.0.0', port), SimpleHandler)
+    server.serve_forever()
 def main():
     if not TOKEN:
         log.error("TELEGRAM_BOT_TOKEN is missing!")
@@ -263,5 +275,8 @@ def main():
     log.info("Advanced Bot with Admin Panel is running...")
     app.run_polling()
 
-if __name__ == "__main__":
+if name == 'main':
+    server_thread = threading.Thread(target=run_dummy_server, daemon=True)
+    server_thread.start()
+    log.info("Dummy web server started...") 
     main()
