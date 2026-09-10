@@ -144,7 +144,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         market = user_selections.get(user_id, {}).get("market", "EURUSD")
         
-        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
+        decision = random.choice(["صعود🟢 (CALL)", "هبوط🔴 (PUT)"])
         accuracy = random.randint(75, 95)
         
         if "صعود" in decision:
@@ -158,7 +158,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🔹 السوق / الأصل: {market}\n"
             f"⏱ المدة الزمنية: {tf}\n"
             f"📈 نسبة وقوة التحليل: %{accuracy} ({trend_text})\n"
-            f"🟢 القرار النهائي: {decision}\n\n"
+            f"🎯 القرار النهائي: {decision}\n\n"
             f"📉 **نسب المؤشرات:**\n"
             f"• ATR: %{random.randint(50, 90)}\n"
             f"• RSI: %{random.randint(20, 85)}\n"
