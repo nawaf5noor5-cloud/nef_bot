@@ -2,7 +2,7 @@ import os
 import logging
 import random
 import asyncio
-import theading
+import threading
 
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
