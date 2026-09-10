@@ -1,3 +1,5 @@
+import time
+import requests
 import logging
 import random
 import threading
@@ -191,6 +193,17 @@ async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYP
             await update.message.reply_text(f"✅ تم بنجاح إضافة المستخدم / المعرف: **{new_user}** إلى قائمة المسموح لهم.", parse_mode="Markdown")
             return
 
+# وظيفة التنشيط الذاتي (منع السيرفر من النوم نهائياً وبدون تدخل منك)
+def self_ping():
+    url = "https://nef-bot.onrender.com"  # رابط سيرفرك الحالي على Render
+    while True:
+        try:
+            time.sleep(240)  # إرسال نبضة تنشيط كل 4 دقائق لمنع السكون
+            requests.get(url)
+            log.info("Self-ping sent successfully to keep bot awake.")
+        except Exception as e:
+            log.error(f"Self-ping error: {e}")
+            
 def main():
     if not TOKEN:
         log.error("No token found!")
@@ -207,6 +220,10 @@ def main():
     t.daemon = True
     t.start()
 
+    # تشغيل خيط التنشيط الذاتي
+    t_ping = threading.Thread(target=self_ping)
+    t_ping.daemon = True
+    t_ping.start()
     log.info("Bot is starting...")
     application.run_polling()
 
