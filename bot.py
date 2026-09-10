@@ -23,6 +23,7 @@ TOKEN = "8968520359:AAGNBUm9GssXoB6SeZAuPHW6IAfxC0aFJQo"
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
 ALLOWED_USERS = {INITIAL_ADMIN_ID}
 admin_adding_state = set()
+admin_deleting_state = set()  # أضف هذا السطر هنا لحالة الحذف
 user_selections = {}
 
 MARKETS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "Gold", "Silver", "Tesla", "Apple", "Amazon", "Smarty", "Football"]
@@ -84,17 +85,51 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if data == "admin_panel":
+   if data == "admin_panel":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            admin_adding_state.discard(user_id)
+            admin_deleting_state.discard(user_id)
             keyboard = [
                 [InlineKeyboardButton("➕ إضافة مستخدم جديد", callback_data="add_user")],
+                [InlineKeyboardButton("🗑️ حذف مستخدم مسجل", callback_data="remove_user")],
+                [InlineKeyboardButton("📋 عرض المستخدمين", callback_data="list_users")],
                 [InlineKeyboardButton("🔙 رجوع للقائمة الرئيسية", callback_data="main_menu")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                "⚙️ **لوحة إدارة المستخدمين (المالك):**\nيمكنك التحكم بصلاحيات الوصول وإضافة مستخدمين جدد عبر اليوزر الخاص بهم.",
+                "⚙️ **لوحة إدارة المستخدمين (المالك):**\nيمكنك التحكم بصلاحيات الوصول وإضافة أو حذف المستخدمين بكل سهولة.",
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
+            )
+        else:
+            await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
+        return
+
+    if data == "remove_user":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            admin_deleting_state.add(user_id)
+            admin_adding_state.discard(user_id)
+            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
+            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                f"🗑️ **حذف مستخدم:**\nالمستخدمون الحاليون:\n{users_list}\n\nالرجاء إرسال **اليوزر أو المعرف المراد حذفه** في رسالة الآن:",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
+        return
+
+    if data == "list_users":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
+            keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                f"📋 **قائمة المستخدمين المسموح لهم:**\n{users_list}",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
+        return
             )
         else:
             await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
@@ -181,17 +216,30 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(report, reply_markup=reply_markup, parse_mode="Markdown")
         return
 
-# معالج استقبال النصوص لإضافة المستخدمين
+# معالج استقبال النصوص لإضافة أو حذف المستخدمين
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
-    if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID) and user_id in admin_adding_state:
-        new_user = update.message.text.strip().replace("@", "")
-        if new_user:
-            ALLOWED_USERS.add(new_user)
-            admin_adding_state.remove(user_id)
-            # تم إزالة علامات التنسيق لمنع حدوث خطأ مع الشرطة السفلية (_)
-            await update.message.reply_text(f"تم بنجاح إضافة المستخدم / المعرف: {new_user} إلى قائمة المسموح لهم.")
+    if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+        text_input = update.message.text.strip().replace("@", "")
+        
+        if user_id in admin_adding_state:
+            if text_input:
+                ALLOWED_USERS.add(text_input)
+                admin_adding_state.remove(user_id)
+                await update.message.reply_text(f"✅ تمت إضافة المستخدم بنجاح: {text_input}")
+            return
+            
+        elif user_id in admin_deleting_state:
+            if text_input:
+                if text_input == str(INITIAL_ADMIN_ID):
+                    await update.message.reply_text("❌ لا يمكنك حذف مالك البوت الأساسي!")
+                elif text_input in ALLOWED_USERS:
+                    ALLOWED_USERS.remove(text_input)
+                    await update.message.reply_text(f"🗑️ تمت إزالة وحذف المستخدم بنجاح: {text_input}")
+                else:
+                    await update.message.reply_text(f"⚠️ المستخدم '{text_input}' غير موجود في القائمة.")
+                admin_deleting_state.remove(user_id)
             return
 
 # وظيفة التنشيط الذاتي (منع السيرفر من النوم نهائياً وبدون تدخل منك)
