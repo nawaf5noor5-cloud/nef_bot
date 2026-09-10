@@ -40,17 +40,13 @@ TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق"]
 
 user_selections = {}
 
+admin_adding_state = set()  # لتتبع حالة المالك عند إضافة مستخدم جديد
+
 # أمر البدء
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     if not is_authorized(user_id):
-        keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="cancel")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(
-            "➕ **إضافة مستخدم:**\nالرجاء إرسال **User ID** الخاص بالمستخدم الجديد في رسالة الآن:",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
+        await update.message.reply_text("❌ غير مَصرح لك استخدام هذا البوت.")
         return
 
     keyboard = [
@@ -65,7 +61,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "اضغط على الزر بالأسفل لبدء اختيار الأصول:"
     )
     await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
-
 # معالج الأزرار والتفاعل
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -89,8 +84,42 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if data == "admin_panel":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            keyboard = [
+                [InlineKeyboardButton("➕ إضافة مستخدم جديد", callback_data="add_user")],
+                [InlineKeyboardButton("🔙 رجوع للقائمة الرئيسية", callback_data="main_menu")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                "⚙️ **لوحة إدارة المستخدمين (المالك):**\nيمكنك التحكم بصلاحيات الوصول وإضافة مستخدمين جدد عبر اليوزر الخاص بهم.",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
+        else:
+            await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
+        return
+
+    if data == "add_user":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            admin_adding_state.add(user_id)
+            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                "➕ **إضافة مستخدم جديد:**\nالرجاء إرسال **اليوزر الخاص بالمستخدم** (مثال: @username أو الـ ID) في رسالة الآن:",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
+        return
+
+    if data == "main_menu":
+        keyboard = [
+            [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
+            [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            "⚙️ **لوحة إدارة المستخدمين:**\nالمستخدمين المصرح لهم مفعلين وجاهزون.",
+            "🤖 **بوت التحليل الذكي وخبير التداول**\n\n🟢 **الحالة:** حساب نشط\n\nاضغط على الزر بالأسفل لبدء اختيار الأصول:",
+            reply_markup=reply_markup,
             parse_mode="Markdown"
         )
         return
@@ -116,26 +145,25 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         market = user_selections.get(user_id, {}).get("market", "EURUSD")
         
-        # محاكاة التقرير الفني المتقدم وقراءة المؤشرات
-        decision = random.choice(["صعود🟢 (CALL)", "هبوط🔴 (PUT)"])
+        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
         accuracy = random.randint(75, 95)
         
         report = (
-            f"📊 **تقرير التحليل الفني المتقدم**\n\n"
+            f"📊 **تقرير التحليل الفني المختصر**\n\n"
             f"🔹 السوق / الأصل: {market}\n"
             f"⏱ المدة الزمنية: {tf}\n"
             f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 'صعود' in decision else 'هبوط قوي'})\n"
-            f"🎯 القرار النهائي: {decision}\n\n"
-            f"📉 **قراءة أقوى المؤشرات الفنية:**\n"
-            f"• متوسط المدى الحقيقي (ATR): تتبع مستويات التقلب بنجاح ({random.randint(10, 30) / 10})\n"
-            f"• مؤشر ستوكاستيك RSI: إشارة حساسة لذروة الشراء/ذروة البيع ({random.randint(20, 80)})\n"
-            f"• الزخم (Momentum): تقييم سرعة تغير الأسعار ({'إيجابي' if 'صعود' in decision else 'سلبي'})\n"
-            f"• مؤشر الحركة الاتجاهية المتوسطة (ADX): تحديد قوة الاتجاه ({random.randint(25, 60)}% قوة الاتجاه)\n"
-            f"• معدل التغير (ROC): حساب نسبة تحول السعر ({random.randint(-5, 5)}%)\n"
-            f"• مؤشر قناة السلع الأساسية (CCI): يحدد انحرافات الأسعار\n"
-            f"• أرون (Aroon): تقييم قوة توقيت الاتجاهات\n"
-            f"• ويليامز (%R): مقياس زخم ذروة الشراء/ذروة البيع\n"
-            f"• مذبذب تشاندي للزخم ( CMO ): يقيس قوة الزخم من خلال مقارنة المكاسب والخسائر\n\n"
+            f"🟢 القرار النهائي: {decision}\n\n"
+            f"📉 **ملخص نسب وقراءات المؤشرات:**\n"
+            f"• متوسط المدى الحقيقي (ATR): %{random.randint(50, 90)} (تقلب)\n"
+            f"• مؤشر ستوكاستيك RSI: %{random.randint(20, 85)} (تشبع)\n"
+            f"• الزخم (Momentum): %{random.randint(40, 90)} (سرعة)\n"
+            f"• مؤشر الحركة الاتجاهية (ADX): %{random.randint(30, 80)} (اتجاه)\n"
+            f"• معدل التغير (ROC): %{random.randint(10, 60)} (تحول)\n"
+            f"• قناة السلع الأساسية (CCI): %{random.randint(25, 75)} (انحراف)\n"
+            f"• أرون (Aroon): %{random.randint(40, 95)} (قوة توقيت)\n"
+            f"• ويليامز (%R): %{random.randint(15, 85)} (ذروة)\n"
+            f"• مذبذب تشاندي (CMO): %{random.randint(30, 70)} (مكاسب/خسائر)\n\n"
             f"⚠️ **تنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
         )
         
@@ -155,13 +183,24 @@ def index():
 def run_flask():
     app_flask.run(host="0.0.0.0", port=8080)
 
+async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    
+    # التحقق مما إذا كان المرسل هو المالك وأنه في وضع إضافة مستخدم
+    if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID) and user_id in admin_adding_state:
+       new_user = update.message.text.strip().replace("@", "")
+        if new_user:
+            ALLOWED_USERS.add(new_user)
+            admin_adding_state.remove(user_id)
+            await update.message.reply_text(f"✅ تم بنجاح إضافة المستخدم / المعرف: **{new_user}** إلى قائمة المسموح لهم.", parse_mode="Markdown")
+            return
+
 def main():
     if not TOKEN:
         log.error("No token found!")
         return
-
     application = Application.builder().token(TOKEN).build()
-    
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CallbackQueryHandler(button_handler))
 
