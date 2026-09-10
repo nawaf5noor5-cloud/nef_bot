@@ -64,19 +64,33 @@ def keep_alive():
     t.start()
 
 # أوامر البوت
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if not is_authorized(user_id):
-        await update.message.reply_text("عذراً، هذا البوت خاص ولا يمكنك استخدامه.")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    if user_id not in ALLOWED_USERS:
+        # رسالة طلب الـ User ID إذا لم يكن مضافاً
+        keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="cancel")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(
+            "➕ **إضافة مستخدم:**\nالرجاء إرسال **User ID** الخاص بالمستخدم الجديد في رسالة الآن:",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
         return
 
-    keyboard = [[InlineKeyboardButton(market, callback_data=f"market_{market}")] for market in MARKETS]
+    # رسالة الترحيب الأصلية بالتنسيق المطلوب
+    keyboard = [
+        [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
+        [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+    ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        "مرحباً بك في بوت التداول الاحترافي.\nاختر السوق الذي تريد تحليله:",
-        reply_markup=reply_markup
+    
+    welcome_text = (
+        "🤖 **بوت التحليل الذكي وخبير التداول**\n\n"
+        "🟢 **الحالة:** حساب نشط\n\n"
+        "اضغط على الزر بالأسفل لبدء اختيار الأصول:"
     )
-
+    await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
+    
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
