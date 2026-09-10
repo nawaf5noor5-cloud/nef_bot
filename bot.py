@@ -21,8 +21,8 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # استدعاء التوكن
-TOKEN = os.getenv("TOKEN", "7968520359:AAFNb89AdC5nd779ISkVwGAdonIPo3SR_vo")
-INITIAL_ADMIN_ID = 6878954751
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+INITIAL_ADMIN_ID = os.getenv("TELEGRAM_USER_ID", "").strip()
 
 # قائمة المستخدمين المصرح لهم
 ALLOWED_USER_FILE = "allowed_users.json"
