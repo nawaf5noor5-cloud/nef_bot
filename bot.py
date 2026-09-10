@@ -70,7 +70,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(query.from_user.id)
 
     if not is_authorized(user_id):
-        await query.edit_message_text("❌ غير مَصرح لك استخدام هذا البوت.")
+        await query.edit_message_text("❌ غير مصرح لك استخدام هذا البوت.")
         return
 
     data = query.data
@@ -79,14 +79,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton(market, callback_data=f"market_{market}")] for market in MARKETS]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            "📊 **اختر السوق:**\nالرجاء اختيار السوق أو الأصل المطلوب:",
+            "📊 **الرجاء اختيار السوق أو الأصل المطلوب:**",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
         return
 
-if data == "admin_panel":
-    if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+    if data == "admin_panel":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_adding_state.discard(user_id)
             admin_deleting_state.discard(user_id)
             keyboard = [
@@ -101,11 +101,11 @@ if data == "admin_panel":
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
             )
-else:
-    await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
+        else:
+            await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
         return
 
-if data == "remove_user":
+    if data == "remove_user":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_deleting_state.add(user_id)
             admin_adding_state.discard(user_id)
@@ -119,7 +119,7 @@ if data == "remove_user":
             )
         return
 
-if data == "list_users":
+    if data == "list_users":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
             keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
