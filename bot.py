@@ -278,5 +278,5 @@ def main():
 if name == 'main':
     server_thread = threading.Thread(target=run_dummy_server, daemon=True)
     server_thread.start()
-    log.info("Dummy web server started...") 
+    log.info("Dummy web server started...")
     main()
