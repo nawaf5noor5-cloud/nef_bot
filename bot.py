@@ -130,7 +130,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode="Markdown"
             )
         return
-
+        
     if data == "remove_user":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_deleting_state.add(user_id)
