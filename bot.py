@@ -108,50 +108,49 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
         time.sleep(1.5)
         
-        # توليد البيانات الأساسية والنسب المئوية للمؤشرات بدقة
         is_buy = random.choice([True, False])
-        direction = "🟢 شراء (CALL)" if is_buy else "🔴 بيع (PUT)"
-        confidence = random.randint(80, 98)
+        decision = "صعود (CALL)" if is_buy else "هبوط (PUT)"
+        strength_desc = "صعود قوي" if is_buy else "هبوط قوي"
+        confidence = random.randint(85, 96)
         
-        # نسب المؤشرات بشكل ملخص ورقمي بحت
-        p_alligator = random.randint(75, 95) if is_buy else random.randint(10, 30)
-        p_macd = random.randint(78, 96) if is_buy else random.randint(12, 28)
-        p_sma = random.randint(80, 95) if is_buy else random.randint(15, 32)
-        p_bollinger = random.randint(76, 94) if is_buy else random.randint(14, 29)
-        p_aroon = random.randint(79, 97) if is_buy else random.randint(10, 25)
-        rsi_val = random.randint(60, 78) if is_buy else random.randint(22, 40)
-        p_rsi = random.randint(77, 95) if is_buy else random.randint(15, 30)
-        p_ao = random.randint(75, 93) if is_buy else random.randint(18, 35)
-        p_fractals = random.randint(80, 98) if is_buy else random.randint(12, 28)
-        p_momentum = random.randint(78, 96) if is_buy else random.randint(14, 30)
-        p_aroon_osc = random.randint(76, 94) if is_buy else random.randint(15, 32)
-        p_sar = random.randint(82, 99) if is_buy else random.randint(10, 25)
-        p_williams = random.randint(75, 95) if is_buy else random.randint(16, 33)
+        # نسب جميع المؤشرات المطلوبة
+        p_alligator = random.randint(70, 95)
+        p_macd = random.randint(75, 96)
+        p_sma = random.randint(72, 94)
+        p_bollinger = random.randint(68, 92)
+        p_aroon = random.randint(70, 95)
+        rsi_val = random.randint(60, 80) if is_buy else random.randint(20, 40)
+        p_ao = random.randint(65, 90)
+        p_fractals = random.randint(75, 98)
+        p_momentum = random.randint(65, 88)
+        p_aroon_osc = random.randint(70, 93)
+        p_sar = random.randint(78, 99)
+        p_williams = random.randint(15, 35)
 
         analysis_text = (
-            f"📈 **التقرير النهائي للتحليل الفني**\n\n"
-            f"📌 **السوق:** {market}\n"
-            f"⏱️ **المدة:** {tf_name}\n"
-            f"💡 **التوصية:** {direction}\n"
-            f"⭐ **نسبة الدقة:** {confidence}%\n\n"
-            f"📊 **نسب ملخص المؤشرات:**\n"
-            f"• التمساح: {p_alligator}%\n"
-            f"• الماكد: {p_macd}%\n"
-            f"• المتوسط المتحرك: {p_sma}%\n"
-            f"• البولينجر باند: {p_bollinger}%\n"
-            f"• أرون: {p_aroon}%\n"
-            f"• القوة النسبية RSI: {p_rsi}% (قيمة RSI: {rsi_val})\n"
-            f"• المذبذب الرائع: {p_ao}%\n"
-            f"• الكسورية: {p_fractals}%\n"
-            f"• الزخم: {p_momentum}%\n"
-            f"• مذبذب أرون: {p_aroon_osc}%\n"
-            f"• التوقف والانعكاس (SAR): {p_sar}%\n"
-            f"• ويليامز: {p_williams}%\n\n"
-            f"⚠️ *تنبيه: التداول ينطوي على مخاطر عالية.*"
+            f"📊 **تقرير التحليل الفني**\n\n"
+            f"🔹 **السوق / الأصل:** {market}\n"
+            f"⏱️ **المدة الزمنية:** {tf_name}\n"
+            f"📈 **نسبة وقوة التحليل:** %{confidence} ({strength_desc})\n"
+            f"🎯 **القرار النهائي:** {decision}\n\n"
+            f"📉 **نسب المؤشرات:**\n\n"
+            f"• التمساح (Alligator): %{p_alligator}\n"
+            f"• الماكد (MACD): %{p_macd}\n"
+            f"• المتوسط المتحرك (SMA/EMA): %{p_sma}\n"
+            f"• البولينجر باند: %{p_bollinger}\n"
+            f"• أرون: %{p_aroon}\n"
+            f"• RSI: %{rsi_val}\n"
+            f"• المذبذب الرائع (AO): %{p_ao}\n"
+            f"• الكسورية (Fractals): %{p_fractals}\n"
+            f"• Momentum: %{p_momentum}\n"
+            f"• مذبذب أرون: %{p_aroon_osc}\n"
+            f"• التوقف والانعكاس (SAR): %{p_sar}\n"
+            f"• Williams %R: %{p_williams}\n\n"
+            f"⚠️ **تنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
         )
         
         keyboard = [
-            [InlineKeyboardButton("🔄 تحليل جديد", callback_data="choose_market")],
+            [InlineKeyboardButton("🔄 تحليل سوق جديد", callback_data="choose_market")],
             [InlineKeyboardButton("🔙 القائمة الرئيسية", callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
