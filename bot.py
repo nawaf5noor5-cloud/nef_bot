@@ -28,7 +28,18 @@ TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق", "
 
 def is_authorized(user_id: str):
     return user_id in ALLOWED_USERS or user_id == str(INITIAL_ADMIN_ID)
-    
+
+# سيرفر الفلاسك للتشغيل المستمر على Render
+app_flask = Flask("bot")
+
+@app_flask.route("/")
+def index():
+    return "Bot is running!"
+
+def run_flask():
+    app_flask.run(host="0.0.0.0", port=8080)
+
+# أمر البداية
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
@@ -48,7 +59,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👇 اضغط على الزر بالأسفل لبدء اختيار الأصول:"
     )
     await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
-# بعد دالة start_command وأزرار الترحيب، ضع دالة الأزرار:
+
+# معالج الأزرار والتفاعل
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -132,25 +144,26 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         market = user_selections.get(user_id, {}).get("market", "EURUSD")
         
-        decision = random.choice(["صعود🟢 (CALL)", "هبوط🔴 (PUT)"])
+        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
         accuracy = random.randint(75, 95)
         
+        # التقرير المختصر بالنسب المئوية للمؤشرات فقط
         report = (
             f"📊 **تقرير التحليل الفني المختصر**\n\n"
             f"🔹 السوق / الأصل: {market}\n"
             f"⏱ المدة الزمنية: {tf}\n"
-            f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 'صعود' in decision else 'هبوط قوي'})\n"
+            f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 🟢'صعود' in decision else 🔴'هبوط قوي'})\n"
             f"🎯 القرار النهائي: {decision}\n\n"
             f"📉 **ملخص نسب وقراءات المؤشرات:**\n"
-            f"• متوسط المدى الحقيقي (ATR): %{random.randint(50, 90)} (تقلب)\n"
-            f"• مؤشر ستوكاستيك RSI: %{random.randint(20, 85)} (تشبع)\n"
-            f"• الزخم (Momentum): %{random.randint(40, 90)} (سرعة)\n"
-            f"• مؤشر الحركة الاتجاهية (ADX): %{random.randint(30, 80)} (اتجاه)\n"
-            f"• معدل التغير (ROC): %{random.randint(10, 60)} (تحول)\n"
-            f"• قناة السلع الأساسية (CCI): %{random.randint(25, 75)} (انحراف)\n"
-            f"• أرون (Aroon): %{random.randint(40, 95)} (قوة توقيت)\n"
-            f"• ويليامز (%R): %{random.randint(15, 85)} (ذروة)\n"
-            f"• مذبذب تشاندي (CMO): %{random.randint(30, 70)} (مكاسب/خسائر)\n\n"
+            f"• متوسط المدى الحقيقي (ATR): %{random.randint(50, 90)}\n"
+            f"• مؤشر ستوكاستيك RSI: %{random.randint(20, 85)}\n"
+            f"• الزخم (Momentum): %{random.randint(40, 90)}\n"
+            f"• مؤشر الحركة الاتجاهية (ADX): %{random.randint(30, 80)}\n"
+            f"• معدل التغير (ROC): %{random.randint(10, 60)}\n"
+            f"• قناة السلع الأساسية (CCI): %{random.randint(25, 75)}\n"
+            f"• أرون (Aroon): %{random.randint(40, 95)}\n"
+            f"• ويليامز (%R): %{random.randint(15, 85)}\n"
+            f"• مذبذب تشاندي (CMO): %{random.randint(30, 70)}\n\n"
             f"⚠️ **تنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
         )
         
@@ -161,7 +174,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(report, reply_markup=reply_markup, parse_mode="Markdown")
         return
 
-# وقبل دالة main() بأسطر قليلة، ضع نسخة واحدة فقط من handle_text_messages:
+# معالج استقبال النصوص لإضافة المستخدمين باليوزر
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
@@ -172,3 +185,25 @@ async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYP
             admin_adding_state.remove(user_id)
             await update.message.reply_text(f"✅ تم بنجاح إضافة المستخدم / المعرف: **{new_user}** إلى قائمة المسموح لهم.", parse_mode="Markdown")
             return
+
+def main():
+    if not TOKEN:
+        log.error("No token found!")
+        return
+
+    application = Application.builder().token(TOKEN).build()
+    
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CallbackQueryHandler(button_handler))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
+
+    # تشغيل سيرفر الويب في خلفية منفصلة
+    t = threading.Thread(target=run_flask)
+    t.daemon = True
+    t.start()
+
+    log.info("Bot is starting...")
+    application.run_polling()
+
+if __name__ == "__main__":
+    main()
