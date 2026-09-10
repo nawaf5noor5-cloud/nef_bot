@@ -152,7 +152,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📊 **تقرير التحليل الفني المختصر**\n\n"
             f"🔹 السوق / الأصل: {market}\n"
             f"⏱ المدة الزمنية: {tf}\n"
-            f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 🟢'صعود' in decision else 🔴'هبوط قوي'})\n"
+            f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 'صعود' in decision else 'هبوط قوي'})\n"
             f"🎯 القرار النهائي: {decision}\n\n"
             f"📉 **ملخص نسب وقراءات المؤشرات:**\n"
             f"• متوسط المدى الحقيقي (ATR): %{random.randint(50, 90)}\n"
