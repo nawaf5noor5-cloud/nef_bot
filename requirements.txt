@@ -1,5 +1,5 @@
-python-telegram-bot>=22,<23
-python-dotenv>=1.0
-pandas>=2.0
-numpy>=1.24
-pandas-ta>=0.3.14b0
+python-telegram-bot
+python-dotenv
+requests
+pandas
+numpy
