@@ -144,7 +144,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         market = user_selections.get(user_id, {}).get("market", "EURUSD")
         
-        decision = random.choice(["صعود🟢 (CALL)", "هبوط🔴 (PUT)"])
+        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
         accuracy = random.randint(75, 95)
         
         if "صعود" in decision:
