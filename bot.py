@@ -101,8 +101,8 @@ if data == "admin_panel":
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
             )
-        else:
-            await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
+else:
+    await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
         return
 
 if data == "remove_user":
