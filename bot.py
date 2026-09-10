@@ -50,13 +50,13 @@ if not is_authorized(user_id):
         await update.message.reply_text("❌ غير مَصرح لك استخدام هذا البوت.")
         return
 
-    keyboard = [
-        [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
-        [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+     keyboard = [
+     [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
+     [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    welcome_text = (
+     welcome_text = (
         "🤖 **بوت التحليل الذكي وخبير التداول**\n\n"
         "🟢 **الحالة:** حساب نشط\n\n"
         "👇 اضغط على الزر بالأسفل لبدء اختيار الأصول:"
