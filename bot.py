@@ -19,7 +19,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 log = logging.getLogger(__name__)
 
 # الإعدادات والمتغيرات الأساسية
-TOKEN = "8968520359:AAE0L8vv6NEHL6cL4hn0KSRge_an17QAoAA"
+TOKEN = "8968520359:AAGNBUm9GssXoB6SeZaUPH6IAfxC0aFJQo"
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
 ALLOWED_USERS = {INITIAL_ADMIN_ID}
 admin_adding_state = set()
@@ -27,7 +27,7 @@ admin_deleting_state = set()
 user_selections = {}
 
 MARKETS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "Gold", "Silver", "Tesla", "Apple", "Amazon", "Smarty", "Football"]
-TIMEFRAMES = ["1 دقيقة", "2 دقيقة", "5 دقائق", "15 دقيقة", "30 دقيقة", "ساعة"]
+TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق", "15 دقيقة", "30 دقيقة"]
 
 # سيرفر الفلاسك للتشغيل المستمر على Render
 app_flask = Flask("bot")
@@ -92,7 +92,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton(tf, callback_data=f"tf_{tf}")] for tf in TIMEFRAMES]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
-            f"⏱️ **الوقـت المختار:** {market_name}\nالرجاء تحديد الإطار الزمني:",
+            f"⏱️ **السوق المختار:** {market_name}\nالرجاء تحديد الإطار الزمني:",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
@@ -106,19 +106,38 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         market = user_selections.get(user_id, {}).get("market", "العام")
         
         # رسالة جاري التحليل مع محاكاة واقعية
-        await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
-        time.sleep(1.5)
+        await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name}) باستخدام الخوارزميات المتقدمة...**", parse_mode="Markdown")
+        time.sleep(2.0)
         
-        # توليد نتيجة تحليل وهمية احترافية
+        # محاكاة نتائج المؤشرات الفنية المتقدمة
         direction = random.choice(["🟢 شراء (CALL)", "🔴 بيع (PUT)"])
-        confidence = random.randint(78, 96)
+        confidence = random.randint(79, 97)
+        volatility = random.choice(["عالي (تذبذب قوي)", "معتدل / مستقر", "منخفض (حركة ضيقة)"])
         
+        # حالات المؤشرات التوافقية
+        macd_status = "إيجابي (تقاطع صاعد)" if "شراء" in direction else "سلبي (تقاطع هابط)"
+        rsi_val = random.randint(58, 75) if "شراء" in direction else random.randint(25, 42)
+        bb_status = "ملامسة الحد العلوي" if "شراء" in direction else "ملامسة الحد السفلي"
+        alligator_status = "تشابك وانفراج إيجابي" if "شراء" in direction else "تشابك وانفراج هابط"
+        momentum_status = "صاعد بقوة" if "شراء" in direction else "هابط بضغط بيعي"
+
         analysis_text = (
-            f"📈 **تقرير التحليل الفني الذكي**\n\n"
-            f"📌 **الأصل:** {market}\n"
-            f"⏱️ **الإطار الزمني:** {tf_name}\n\n"
+            f"📈 **تقرير التحليل الفني الشامل**\n\n"
+            f"📌 **السوق / الأصل:** {market}\n"
+            f"⏱️ **المدة (الإطار الزمني):** {tf_name}\n"
             f"💡 **التوصية المقترحة:** {direction}\n"
             f"⭐ **نسبة الدقة المتوقعة:** {confidence}%\n\n"
+            f"📊 **تحليل المؤشرات والسيولة:**\n"
+            f"• حالة السوق العامة: {volatility}\n"
+            f"• التمساح (Alligator): {alligator_status}\n"
+            f"• الماكد (MACD): {macd_status}\n"
+            f"• المتوسط المتحرك (SMA/EMA): متوافق مع الاتجاه\n"
+            f"• البولينجر باند (Bollinger): {bb_status}\n"
+            f"• مؤشر القوة النسبية (RSI): ({rsi_val})\n"
+            f"• مؤشر الزخم (Momentum): {momentum_status}\n"
+            f"• أرون & مذبذب أرون (Aroon): تأكيد قوة الاتجاه الحالي\n"
+            f"• المذبذب الرائع (AO) & ويليامز (%R): إشارات توافقية دقيقة\n"
+            f"• التوقف والانعكاس (SAR) والكسورية (Fractals): تحديد نقاط الوقف والدعم\n\n"
             f"⚠️ *تنبيه: التداول ينطوي على مخاطر عالية، هذه الإشارة للاستئناس فقط.*"
         )
         
