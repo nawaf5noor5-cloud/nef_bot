@@ -2,6 +2,8 @@ import os
 import logging
 import random
 import asyncio
+import theading
+
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
