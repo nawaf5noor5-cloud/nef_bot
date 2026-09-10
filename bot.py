@@ -181,7 +181,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(report, reply_markup=reply_markup, parse_mode="Markdown")
         return
 
-# معالج استقبال النصوص لإضافة المستخدمين باليوزر
+# معالج استقبال النصوص لإضافة المستخدمين
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
@@ -190,7 +190,8 @@ async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYP
         if new_user:
             ALLOWED_USERS.add(new_user)
             admin_adding_state.remove(user_id)
-            await update.message.reply_text(f"✅ تم بنجاح إضافة المستخدم / المعرف: **{new_user}** إلى قائمة المسموح لهم.", parse_mode="Markdown")
+            # تم إزالة علامات التنسيق لمنع حدوث خطأ مع الشرطة السفلية (_)
+            await update.message.reply_text(f"تم بنجاح إضافة المستخدم / المعرف: {new_user} إلى قائمة المسموح لهم.")
             return
 
 # وظيفة التنشيط الذاتي (منع السيرفر من النوم نهائياً وبدون تدخل منك)
