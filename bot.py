@@ -117,7 +117,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         market = user_selections.get(user_id, {}).get("market", "EURUSD")
         
         # محاكاة التقرير الفني المتقدم وقراءة المؤشرات
-        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
+        decision = random.choice(["صعود🟢 (CALL)", "هبوط🔴 (PUT)"])
         accuracy = random.randint(75, 95)
         
         report = (
@@ -125,12 +125,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🔹 السوق / الأصل: {market}\n"
             f"⏱ المدة الزمنية: {tf}\n"
             f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 'صعود' in decision else 'هبوط قوي'})\n"
-            f"🟢 القرار النهائي: {decision}\n\n"
+            f"🎯 القرار النهائي: {decision}\n\n"
             f"📉 **قراءة أقوى المؤشرات الفنية:**\n"
-            f"• مؤشر القوة النسبية (RSI): {random.randint(40, 60)} (منطقة الحياد والسيولة)\n"
-            f"• مؤشر الماكد (MACD): تقاطع إيجابي يدعم الاتجاه\n"
-            f"• بولينجر باند (Bollinger Bands): ملامسة الحد وتأكيد الارتداد\n"
-            f"• المتوسطات المتحركة (Moving Averages): فوق المتوسطات السريعة\n\n"
+            f"• متوسط المدى الحقيقي (ATR): تتبع مستويات التقلب بنجاح ({random.randint(10, 30) / 10})\n"
+            f"• مؤشر ستوكاستيك RSI: إشارة حساسة لذروة الشراء/ذروة البيع ({random.randint(20, 80)})\n"
+            f"• الزخم (Momentum): تقييم سرعة تغير الأسعار ({'إيجابي' if 'صعود' in decision else 'سلبي'})\n"
+            f"• مؤشر الحركة الاتجاهية المتوسطة (ADX): تحديد قوة الاتجاه ({random.randint(25, 60)}% قوة الاتجاه)\n"
+            f"• معدل التغير (ROC): حساب نسبة تحول السعر ({random.randint(-5, 5)}%)\n"
+            f"• مؤشر قناة السلع الأساسية (CCI): يحدد انحرافات الأسعار\n"
+            f"• أرون (Aroon): تقييم قوة توقيت الاتجاهات\n"
+            f"• ويليامز (%R): مقياس زخم ذروة الشراء/ذروة البيع\n"
+            f"• مذبذب تشاندي للزخم ( CMO ): يقيس قوة الزخم من خلال مقارنة المكاسب والخسائر\n\n"
             f"⚠️ **تنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
         )
         
