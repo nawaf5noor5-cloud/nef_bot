@@ -1,0 +1,4 @@
+Use the login/session mechanism from the upstream API-Expert-Option repository if you need automatic token capture:
+https://github.com/A11ksa/API-Expert-Option
+
+The upstream project documents Playwright login and session token storage. Do not send your credentials or token to another person.
