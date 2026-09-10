@@ -46,7 +46,7 @@ def run_flask():
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
-    if not is_authorized(user_id):
+if not is_authorized(user_id):
         await update.message.reply_text("❌ غير مَصرح لك استخدام هذا البوت.")
         return
 
@@ -85,8 +85,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-  if data == "admin_panel":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+if data == "admin_panel":
+    if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_adding_state.discard(user_id)
             admin_deleting_state.discard(user_id)
             keyboard = [
@@ -105,7 +105,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
         return
 
-    if data == "remove_user":
+if data == "remove_user":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_deleting_state.add(user_id)
             admin_adding_state.discard(user_id)
@@ -119,7 +119,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
 
-    if data == "list_users":
+if data == "list_users":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
             keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
@@ -131,7 +131,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
         
-    if data == "remove_user":
+if data == "remove_user":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_deleting_state.add(user_id)
             admin_adding_state.discard(user_id)
@@ -145,7 +145,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
 
-    if data == "list_users":
+if data == "list_users":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
             keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
@@ -161,7 +161,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
         return
 
-    if data == "add_user":
+if data == "add_user":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_adding_state.add(user_id)
             keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
@@ -173,7 +173,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         return
 
-    if data == "main_menu":
+if data == "main_menu":
         keyboard = [
             [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
             [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
@@ -186,7 +186,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if data.startswith("market_"):
+if data.startswith("market_"):
         market = data.split("_", 1)[1]
         user_selections[user_id] = {"market": market}
         
@@ -200,7 +200,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if data.startswith("tf_"):
+if data.startswith("tf_"):
         tf = data.split("_", 1)[1]
         if user_id in user_selections:
             user_selections[user_id]["tf"] = tf
