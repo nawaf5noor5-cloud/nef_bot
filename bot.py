@@ -18,19 +18,16 @@ from telegram.ext import (
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 log = logging.getLogger(__name__)
 
-# الإعدادات والمتغيرات الأساسية (تأكد من وضع التوكن الصحيح هنا)
-TOKEN = "8968520359:AAGNBUm9GssXoB6SeZAuPHW6IAfxC0aFJQo"
+# الإعدادات والمتغيرات الأساسية
+TOKEN = "8968520359:AAGNBUm9GssXoB6SeZaUPH6IAfxC0aFJQo"
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
 ALLOWED_USERS = {INITIAL_ADMIN_ID}
 admin_adding_state = set()
-admin_deleting_state = set()  # أضف هذا السطر هنا لحالة الحذف
+admin_deleting_state = set()
 user_selections = {}
 
 MARKETS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "Gold", "Silver", "Tesla", "Apple", "Amazon", "Smarty", "Football"]
-TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق", "15 دقيقة", "30 دقيقة"]
-
-def is_authorized(user_id: str):
-    return user_id in ALLOWED_USERS or user_id == str(INITIAL_ADMIN_ID)
+TIMEFRAMES = ["1 دقيقة", "2 دقيقة", "5 دقائق", "15 دقيقة", "30 دقيقة", "ساعة"]
 
 # سيرفر الفلاسك للتشغيل المستمر على Render
 app_flask = Flask("bot")
@@ -41,6 +38,10 @@ def index():
 
 def run_flask():
     app_flask.run(host="0.0.0.0", port=8080)
+
+# أداة الحماية والتحقق من صلاحية المستخدم
+def is_authorized(user_id: str) -> bool:
+    return user_id in ALLOWED_USERS
 
 # أمر البداية
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -85,6 +86,63 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    if data.startswith("market_"):
+        market_name = data.split("_")[1]
+        user_selections[user_id] = {"market": market_name}
+        keyboard = [[InlineKeyboardButton(tf, callback_data=f"tf_{tf}")] for tf in TIMEFRAMES]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            f"⏱️ **الوقـت المختار:** {market_name}\nالرجاء تحديد الإطار الزمني:",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+        return
+
+    if data.startswith("tf_"):
+        tf_name = data.split("_")[1]
+        if user_id in user_selections:
+            user_selections[user_id]["timeframe"] = tf_name
+        
+        market = user_selections.get(user_id, {}).get("market", "العام")
+        
+        # رسالة جاري التحليل مع محاكاة واقعية
+        await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
+        time.sleep(1.5)
+        
+        # توليد نتيجة تحليل وهمية احترافية
+        direction = random.choice(["🟢 شراء (CALL)", "🔴 بيع (PUT)"])
+        confidence = random.randint(78, 96)
+        
+        analysis_text = (
+            f"📈 **تقرير التحليل الفني الذكي**\n\n"
+            f"📌 **الأصل:** {market}\n"
+            f"⏱️ **الإطار الزمني:** {tf_name}\n\n"
+            f"💡 **التوصية المقترحة:** {direction}\n"
+            f"⭐ **نسبة الدقة المتوقعة:** {confidence}%\n\n"
+            f"⚠️ *تنبيه: التداول ينطوي على مخاطر عالية، هذه الإشارة للاستئناس فقط.*"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("🔄 تحليل جديد", callback_data="choose_market")],
+            [InlineKeyboardButton("🔙 القائمة الرئيسية", callback_data="main_menu")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(analysis_text, reply_markup=reply_markup, parse_mode="Markdown")
+        return
+
+    if data == "main_menu":
+        keyboard = [
+            [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
+            [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            "🤖 **القائمة الرئيسية:**\nاختر من الأزرار أدناه:",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+        return
+
     if data == "admin_panel":
         if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
             admin_adding_state.discard(user_id)
@@ -103,6 +161,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         else:
             await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
+        return
+
+    if data == "add_user":
+        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
+            admin_adding_state.add(user_id)
+            admin_deleting_state.discard(user_id)
+            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await query.edit_message_text(
+                "➕ **إضافة مستخدم جديد:**\nالرجاء إرسال **اليوزر أو المعرف** المراد إضافته في رسالة الآن:",
+                reply_markup=reply_markup,
+                parse_mode="Markdown"
+            )
         return
 
     if data == "remove_user":
@@ -130,175 +201,52 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode="Markdown"
             )
         return
-        
-if data == "remove_user":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            admin_deleting_state.add(user_id)
-            admin_adding_state.discard(user_id)
-            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
-            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                f"🗑️ **حذف مستخدم:**\nالمستخدمون الحاليون:\n{users_list}\n\nالرجاء إرسال **اليوزر أو المعرف المراد حذفه** في رسالة الآن:",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-        return
 
-if data == "list_users":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
-            keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                f"📋 **قائمة المستخدمين المسموح لهم:**\n{users_list}",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-        return
-            )
-        else:
-            await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
-        return
-
-if data == "add_user":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            admin_adding_state.add(user_id)
-            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                "➕ **إضافة مستخدم جديد:**\nالرجاء إرسال **اليوزر الخاص بالمستخدم** (مثال: @username أو الـ ID) في رسالة الآن:",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-        return
-
-if data == "main_menu":
-        keyboard = [
-            [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
-            [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            "🤖 **بوت التحليل الذكي وخبير التداول**\n\n🟢 **الحالة:** حساب نشط\n\nاضغط على الزر بالأسفل لبدء اختيار الأصول:",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
-        return
-
-if data.startswith("market_"):
-        market = data.split("_", 1)[1]
-        user_selections[user_id] = {"market": market}
-        
-        keyboard = [[InlineKeyboardButton(tf, callback_data=f"tf_{tf}")] for tf in TIMEFRAMES]
-        keyboard.append([InlineKeyboardButton("رجوع", callback_data="choose_market")])
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            f"📈 لقد اخترت السوق: **{market}**\nالآن اختر المدة الزمنية للصفقة:",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
-        return
-
-if data.startswith("tf_"):
-        tf = data.split("_", 1)[1]
-        if user_id in user_selections:
-            user_selections[user_id]["tf"] = tf
-        
-        market = user_selections.get(user_id, {}).get("market", "EURUSD")
-        
-        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
-        accuracy = random.randint(75, 95)
-        
-        if "صعود" in decision:
-            trend_text = "صعود قوي"
-        else:
-            trend_text = "هبوط قوي"
-
-        # تقرير المؤشرات (نسب مئوية فقط بدون شرح طويل)
-        report = (
-            f"📊 **تقرير التحليل الفني**\n\n"
-            f"🔹 السوق / الأصل: {market}\n"
-            f"⏱ المدة الزمنية: {tf}\n"
-            f"📈 نسبة وقوة التحليل: %{accuracy} ({trend_text})\n"
-            f"🎯 القرار النهائي: {decision}\n\n"
-            f"📉 **نسب المؤشرات:**\n"
-            f"• ATR: %{random.randint(50, 90)}\n"
-            f"• RSI: %{random.randint(20, 85)}\n"
-            f"• Momentum: %{random.randint(40, 90)}\n"
-            f"• ADX: %{random.randint(30, 80)}\n"
-            f"• ROC: %{random.randint(10, 60)}\n"
-            f"• CCI: %{random.randint(25, 75)}\n"
-            f"• Aroon: %{random.randint(40, 95)}\n"
-            f"• Williams %R: %{random.randint(15, 85)}\n"
-            f"• CMO: %{random.randint(30, 70)}\n\n"
-            f"⚠️ **تنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
-        )
-        
-        keyboard = [
-            [InlineKeyboardButton("🔄 تحليل سوق جديد", callback_data="choose_market")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(report, reply_markup=reply_markup, parse_mode="Markdown")
-        return
-
-# معالج استقبال النصوص لإضافة أو حذف المستخدمين
+# معالج الرسائل النصية الموجهة لإدارة المستخدمين
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
-    
+    text = update.message.text.strip()
+
     if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-        text_input = update.message.text.strip().replace("@", "")
-        
         if user_id in admin_adding_state:
-            if text_input:
-                ALLOWED_USERS.add(text_input)
-                admin_adding_state.remove(user_id)
-                await update.message.reply_text(f"✅ تمت إضافة المستخدم بنجاح: {text_input}")
-            return
-            
-        elif user_id in admin_deleting_state:
-            if text_input:
-                if text_input == str(INITIAL_ADMIN_ID):
-                    await update.message.reply_text("❌ لا يمكنك حذف مالك البوت الأساسي!")
-                elif text_input in ALLOWED_USERS:
-                    ALLOWED_USERS.remove(text_input)
-                    await update.message.reply_text(f"🗑️ تمت إزالة وحذف المستخدم بنجاح: {text_input}")
-                else:
-                    await update.message.reply_text(f"⚠️ المستخدم '{text_input}' غير موجود في القائمة.")
-                admin_deleting_state.remove(user_id)
+            admin_adding_state.remove(user_id)
+            ALLOWED_USERS.add(text)
+            await update.message.reply_text(f"✅ تم إضافة المستخدم `{text}` بنجاح إلى القائمة المسموحة.", parse_mode="Markdown")
             return
 
-# وظيفة التنشيط الذاتي (منع السيرفر من النوم نهائياً وبدون تدخل منك)
+        if user_id in admin_deleting_state:
+            admin_deleting_state.remove(user_id)
+            if text in ALLOWED_USERS:
+                if text == str(INITIAL_ADMIN_ID):
+                    await update.message.reply_text("⚠️ لا يمكنك حذف المالك الأساسي للبوت.")
+                    return
+                ALLOWED_USERS.remove(text)
+                await update.message.reply_text(f"🗑️ تم حذف المستخدم `{text}` بنجاح.", parse_mode="Markdown")
+            else:
+                await update.message.reply_text("❌ هذا المستخدم غير موجود في قائمة المسموح لهم.")
+            return
+
+# آلية الـ Self Ping لمنع سكون Render
 def self_ping():
-    url = "https://nef-bot.onrender.com"  # رابط سيرفرك الحالي على Render
     while True:
         try:
-            time.sleep(240)  # إرسال نبضة تنشيط كل 4 دقائق لمنع السكون
-            requests.get(url)
-            log.info("Self-ping sent successfully to keep bot awake.")
-        except Exception as e:
-            log.error(f"Self-ping error: {e}")
-            
-def main():
-    if not TOKEN:
-        log.error("No token found!")
-        return
+            requests.get("http://localhost:8080/")
+        except Exception:
+            pass
+        time.sleep(300)
 
+def main():
+    # تشغيل الفلاسك في مسار خلفي
+    threading.Thread(target=run_flask, daemon=True).start()
+    threading.Thread(target=self_ping, daemon=True).start()
+
+    # بناء وتشغيل تطبيق البوت
     application = Application.builder().token(TOKEN).build()
-    
+
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
 
-    # تشغيل سيرفر الويب في خلفية منفصلة
-    t = threading.Thread(target=run_flask)
-    t.daemon = True
-    t.start()
-
-    # تشغيل خيط التنشيط الذاتي
-    t_ping = threading.Thread(target=self_ping)
-    t_ping.daemon = True
-    t_ping.start()
     log.info("Bot is starting...")
     application.run_polling()
 
