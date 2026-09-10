@@ -260,6 +260,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
 def run_dummy_server():
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(('0.0.0.0', port), SimpleHandler)
+    log.info(f"Dummy web server started on port {port}")
     server.serve_forever()
 def main():
     if not TOKEN:
