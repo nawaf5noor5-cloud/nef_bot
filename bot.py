@@ -1,67 +1,4 @@
-import os
-import logging
-import random
-import asyncio
-import threading
-
-from flask import Flask
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    filters,
-    ContextTypes,
-)
-
-# إعداد السجلات
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-log = logging.getLogger(__name__)
-
-# استدعاء التوكن
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-INITIAL_ADMIN_ID = os.getenv("TELEGRAM_USER_ID", "").strip()
-
-# قائمة المستخدمين المصرح لهم
-ALLOWED_USER_FILE = "allowed_users.json"
-ALLOWED_USERS = set()
-if INITIAL_ADMIN_ID:
-    ALLOWED_USERS.add(str(INITIAL_ADMIN_ID))
-
-def is_authorized(user_id):
-    return str(user_id) in ALLOWED_USERS or (INITIAL_ADMIN_ID and str(user_id) == str(INITIAL_ADMIN_ID))
-
-# الأسواق المتاحة والمدد الزمنية
-MARKETS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "Gold", "Silver", "Tesla", "Apple", "Amazon", "Smarty", "Football"]
-TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق"]
-
-user_selections = {}
-
-admin_adding_state = set()  # لتتبع حالة المالك عند إضافة مستخدم جديد
-
-# أمر البدء
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = str(update.effective_user.id)
-    if not is_authorized(user_id):
-        await update.message.reply_text("❌ غير مَصرح لك استخدام هذا البوت.")
-        return
-
-    keyboard = [
-        [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
-        [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    welcome_text = (
-        "🤖 **بوت التحليل الذكي وخبير التداول**\n\n"
-        "🟢 **الحالة:** حساب نشط\n\n"
-        "اضغط على الزر بالأسفل لبدء اختيار الأصول:"
-    )
-    await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
-# معالج الأزرار والتفاعل
+# بعد دالة start_command وأزرار الترحيب، ضع دالة الأزرار:
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -145,7 +82,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         market = user_selections.get(user_id, {}).get("market", "EURUSD")
         
-        decision = random.choice(["صعود (CALL)", "هبوط (PUT)"])
+        decision = random.choice(["صعود🟢 (CALL)", "هبوط🔴 (PUT)"])
         accuracy = random.randint(75, 95)
         
         report = (
@@ -153,7 +90,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🔹 السوق / الأصل: {market}\n"
             f"⏱ المدة الزمنية: {tf}\n"
             f"📈 نسبة وقوة التحليل: %{accuracy} ({'صعود قوي' if 'صعود' in decision else 'هبوط قوي'})\n"
-            f"🟢 القرار النهائي: {decision}\n\n"
+            f"🎯 القرار النهائي: {decision}\n\n"
             f"📉 **ملخص نسب وقراءات المؤشرات:**\n"
             f"• متوسط المدى الحقيقي (ATR): %{random.randint(50, 90)} (تقلب)\n"
             f"• مؤشر ستوكاستيك RSI: %{random.randint(20, 85)} (تشبع)\n"
@@ -174,43 +111,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(report, reply_markup=reply_markup, parse_mode="Markdown")
         return
 
-# تشغيل خادم سرفر بسيط لـ Render
-app_flask = Flask(__name__)
-@app_flask.route("/")
-def index():
-    return "Bot is running!"
-
-def run_flask():
-    app_flask.run(host="0.0.0.0", port=8080)
-
+# وقبل دالة main() بأسطر قليلة، ضع نسخة واحدة فقط من handle_text_messages:
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     
-    # التحقق مما إذا كان المرسل هو المالك وأنه في وضع إضافة مستخدم
     if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID) and user_id in admin_adding_state:
-       new_user = update.message.text.strip().replace("@", "")
+        new_user = update.message.text.strip().replace("@", "")
         if new_user:
             ALLOWED_USERS.add(new_user)
             admin_adding_state.remove(user_id)
             await update.message.reply_text(f"✅ تم بنجاح إضافة المستخدم / المعرف: **{new_user}** إلى قائمة المسموح لهم.", parse_mode="Markdown")
             return
-
-def main():
-    if not TOKEN:
-        log.error("No token found!")
-        return
-    application = Application.builder().token(TOKEN).build()
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CallbackQueryHandler(button_handler))
-
-    # تشغيل سيرفر الويب في خلفية منفصلة
-    t = threading.Thread(target=run_flask)
-    t.daemon = True
-    t.start()
-
-    log.info("Bot is starting...")
-    application.run_polling()
-
-if __name__ == "__main__":
-    main()
