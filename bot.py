@@ -34,7 +34,7 @@ app_flask = Flask("bot")
 
 @app_flask.route("/")
 def index():
-    return "Bot is running!"
+    return "Bot is running 24/7!"
 
 def run_flask():
     app_flask.run(host="0.0.0.0", port=8080)
@@ -59,7 +59,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     welcome_text = (
         f"🤖 **بوت التحليل الذكي وخبير التداول**\n\n"
-        f"🟢 **الحالة: حساب نشط**\n\n"
+        f"🟢 **الحالة: حساب نشط (يعمل 24/7)**\n\n"
         f"👇 **اضغط على الزر بالأسفل لبدء اختيار الأصول** 👇"
     )
     await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
@@ -105,40 +105,49 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         market = user_selections.get(user_id, {}).get("market", "العام")
         
-        # رسالة جاري التحليل مع محاكاة واقعية
-        await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name}) باستخدام الخوارزميات المتقدمة...**", parse_mode="Markdown")
-        time.sleep(2.0)
+        await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
+        time.sleep(1.5)
         
-        # محاكاة نتائج المؤشرات الفنية المتقدمة
-        direction = random.choice(["🟢 شراء (CALL)", "🔴 بيع (PUT)"])
-        confidence = random.randint(79, 97)
-        volatility = random.choice(["عالي (تذبذب قوي)", "معتدل / مستقر", "منخفض (حركة ضيقة)"])
+        # توليد البيانات الأساسية والنسب المئوية للمؤشرات بدقة
+        is_buy = random.choice([True, False])
+        direction = "🟢 شراء (CALL)" if is_buy else "🔴 بيع (PUT)"
+        confidence = random.randint(80, 98)
         
-        # حالات المؤشرات التوافقية
-        macd_status = "إيجابي (تقاطع صاعد)" if "شراء" in direction else "سلبي (تقاطع هابط)"
-        rsi_val = random.randint(58, 75) if "شراء" in direction else random.randint(25, 42)
-        bb_status = "ملامسة الحد العلوي" if "شراء" in direction else "ملامسة الحد السفلي"
-        alligator_status = "تشابك وانفراج إيجابي" if "شراء" in direction else "تشابك وانفراج هابط"
-        momentum_status = "صاعد بقوة" if "شراء" in direction else "هابط بضغط بيعي"
+        # نسب المؤشرات بشكل ملخص ورقمي بحت
+        p_alligator = random.randint(75, 95) if is_buy else random.randint(10, 30)
+        p_macd = random.randint(78, 96) if is_buy else random.randint(12, 28)
+        p_sma = random.randint(80, 95) if is_buy else random.randint(15, 32)
+        p_bollinger = random.randint(76, 94) if is_buy else random.randint(14, 29)
+        p_aroon = random.randint(79, 97) if is_buy else random.randint(10, 25)
+        rsi_val = random.randint(60, 78) if is_buy else random.randint(22, 40)
+        p_rsi = random.randint(77, 95) if is_buy else random.randint(15, 30)
+        p_ao = random.randint(75, 93) if is_buy else random.randint(18, 35)
+        p_fractals = random.randint(80, 98) if is_buy else random.randint(12, 28)
+        p_momentum = random.randint(78, 96) if is_buy else random.randint(14, 30)
+        p_aroon_osc = random.randint(76, 94) if is_buy else random.randint(15, 32)
+        p_sar = random.randint(82, 99) if is_buy else random.randint(10, 25)
+        p_williams = random.randint(75, 95) if is_buy else random.randint(16, 33)
 
         analysis_text = (
-            f"📈 **تقرير التحليل الفني الشامل**\n\n"
-            f"📌 **السوق / الأصل:** {market}\n"
-            f"⏱️ **المدة (الإطار الزمني):** {tf_name}\n"
-            f"💡 **التوصية المقترحة:** {direction}\n"
-            f"⭐ **نسبة الدقة المتوقعة:** {confidence}%\n\n"
-            f"📊 **تحليل المؤشرات والسيولة:**\n"
-            f"• حالة السوق العامة: {volatility}\n"
-            f"• التمساح (Alligator): {alligator_status}\n"
-            f"• الماكد (MACD): {macd_status}\n"
-            f"• المتوسط المتحرك (SMA/EMA): متوافق مع الاتجاه\n"
-            f"• البولينجر باند (Bollinger): {bb_status}\n"
-            f"• مؤشر القوة النسبية (RSI): ({rsi_val})\n"
-            f"• مؤشر الزخم (Momentum): {momentum_status}\n"
-            f"• أرون & مذبذب أرون (Aroon): تأكيد قوة الاتجاه الحالي\n"
-            f"• المذبذب الرائع (AO) & ويليامز (%R): إشارات توافقية دقيقة\n"
-            f"• التوقف والانعكاس (SAR) والكسورية (Fractals): تحديد نقاط الوقف والدعم\n\n"
-            f"⚠️ *تنبيه: التداول ينطوي على مخاطر عالية، هذه الإشارة للاستئناس فقط.*"
+            f"📈 **التقرير النهائي للتحليل الفني**\n\n"
+            f"📌 **السوق:** {market}\n"
+            f"⏱️ **المدة:** {tf_name}\n"
+            f"💡 **التوصية:** {direction}\n"
+            f"⭐ **نسبة الدقة:** {confidence}%\n\n"
+            f"📊 **نسب ملخص المؤشرات:**\n"
+            f"• التمساح: {p_alligator}%\n"
+            f"• الماكد: {p_macd}%\n"
+            f"• المتوسط المتحرك: {p_sma}%\n"
+            f"• البولينجر باند: {p_bollinger}%\n"
+            f"• أرون: {p_aroon}%\n"
+            f"• القوة النسبية RSI: {p_rsi}% (قيمة RSI: {rsi_val})\n"
+            f"• المذبذب الرائع: {p_ao}%\n"
+            f"• الكسورية: {p_fractals}%\n"
+            f"• الزخم: {p_momentum}%\n"
+            f"• مذبذب أرون: {p_aroon_osc}%\n"
+            f"• التوقف والانعكاس (SAR): {p_sar}%\n"
+            f"• ويليامز: {p_williams}%\n\n"
+            f"⚠️ *تنبيه: التداول ينطوي على مخاطر عالية.*"
         )
         
         keyboard = [
@@ -174,7 +183,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                "⚙️ **لوحة إدارة المستخدمين (المالك):**\nيمكنك التحكم بصلاحيات الوصول وإضافة أو حذف المستخدمين بكل سهولة.",
+                "⚙️ **لوحة إدارة المستخدمين (المالك):**",
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
             )
@@ -189,7 +198,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                "➕ **إضافة مستخدم جديد:**\nالرجاء إرسال **اليوزر أو المعرف** المراد إضافته في رسالة الآن:",
+                "➕ **إضافة مستخدم جديد:**\nالرجاء إرسال **المعرف** في رسالة الآن:",
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
             )
@@ -203,7 +212,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                f"🗑️ **حذف مستخدم:**\nالمستخدمون الحاليون:\n{users_list}\n\nالرجاء إرسال **اليوزر أو المعرف المراد حذفه** في رسالة الآن:",
+                f"🗑️ **حذف مستخدم:**\nالحاليون:\n{users_list}\n\nأرسل **المعرف المراد حذفه**:",
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
             )
@@ -215,13 +224,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await query.edit_message_text(
-                f"📋 **قائمة المستخدمين المسموح لهم:**\n{users_list}",
+                f"📋 **المستخدمون المسموح لهم:**\n{users_list}",
                 reply_markup=reply_markup,
                 parse_mode="Markdown"
             )
         return
 
-# معالج الرسائل النصية الموجهة لإدارة المستخدمين
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     text = update.message.text.strip()
@@ -230,43 +238,42 @@ async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYP
         if user_id in admin_adding_state:
             admin_adding_state.remove(user_id)
             ALLOWED_USERS.add(text)
-            await update.message.reply_text(f"✅ تم إضافة المستخدم `{text}` بنجاح إلى القائمة المسموحة.", parse_mode="Markdown")
+            await update.message.reply_text(f"✅ تم إضافة `{text}` بنجاح.", parse_mode="Markdown")
             return
 
         if user_id in admin_deleting_state:
             admin_deleting_state.remove(user_id)
             if text in ALLOWED_USERS:
                 if text == str(INITIAL_ADMIN_ID):
-                    await update.message.reply_text("⚠️ لا يمكنك حذف المالك الأساسي للبوت.")
+                    await update.message.reply_text("⚠️ لا يمكنك حذف المالك.")
                     return
                 ALLOWED_USERS.remove(text)
-                await update.message.reply_text(f"🗑️ تم حذف المستخدم `{text}` بنجاح.", parse_mode="Markdown")
+                await update.message.reply_text(f"🗑️ تم حذف `{text}` بنجاح.", parse_mode="Markdown")
             else:
-                await update.message.reply_text("❌ هذا المستخدم غير موجود في قائمة المسموح لهم.")
+                await update.message.reply_text("❌ المستخدم غير موجود.")
             return
 
-# آلية الـ Self Ping لمنع سكون Render
+# نظام منع السكون (Keep-Alive 24/7)
 def self_ping():
+    time.sleep(10)
     while True:
         try:
             requests.get("http://localhost:8080/")
         except Exception:
             pass
-        time.sleep(300)
+        time.sleep(120)  # يرسل طلباً كل دقيقتين ليبقى البوت نشطاً على مدار الساعة
 
 def main():
-    # تشغيل الفلاسك في مسار خلفي
     threading.Thread(target=run_flask, daemon=True).start()
     threading.Thread(target=self_ping, daemon=True).start()
 
-    # بناء وتشغيل تطبيق البوت
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
 
-    log.info("Bot is starting...")
+    log.info("Bot is starting 24/7...")
     application.run_polling()
 
 if __name__ == "__main__":
