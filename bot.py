@@ -64,7 +64,7 @@ def keep_alive():
     t.start()
 
 # أوامر البوت
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     if user_id not in ALLOWED_USERS:
         # رسالة طلب الـ User ID إذا لم يكن مضافاً
