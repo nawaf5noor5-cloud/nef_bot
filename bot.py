@@ -231,27 +231,27 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
-    text = update.message.text.strip()
+    text = update.message.text.strip().lstrip("@")  # إزالة علامة @ تلقائياً لضمان حفظ المعرف بشكل صحيح
 
     if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
         if user_id in admin_adding_state:
             admin_adding_state.remove(user_id)
             ALLOWED_USERS.add(text)
-            await update.message.reply_text(f"✅ تم إضافة `{text}` بنجاح.", parse_mode="Markdown")
+            await update.message.reply_text(f"✅ تم إضافة المستخدم `{text}` بنجاح وتفعيله.", parse_mode="Markdown")
             return
 
         if user_id in admin_deleting_state:
             admin_deleting_state.remove(user_id)
             if text in ALLOWED_USERS:
                 if text == str(INITIAL_ADMIN_ID):
-                    await update.message.reply_text("⚠️ لا يمكنك حذف المالك.")
+                    await update.message.reply_text("⚠️ لا يمكنك حذف المالك الأساسي.")
                     return
                 ALLOWED_USERS.remove(text)
-                await update.message.reply_text(f"🗑️ تم حذف `{text}` بنجاح.", parse_mode="Markdown")
+                await update.message.reply_text(f"🗑️ تم حذف المستخدم `{text}` بنجاح.", parse_mode="Markdown")
             else:
-                await update.message.reply_text("❌ المستخدم غير موجود.")
+                await update.message.reply_text("❌ هذا المستخدم غير موجود في القائمة.")
             return
-
+            
 # نظام منع السكون (Keep-Alive 24/7)
 def self_ping():
     time.sleep(10)
