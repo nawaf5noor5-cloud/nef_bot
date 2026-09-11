@@ -156,7 +156,36 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
         return
+if data == "main_menu":
+        keyboard = [
+            [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
+            [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            "🤖 **بوت التحليل الذكي وخبير التداول**\n\n🟢 الحالة: حساب نشط (يعمل 24/7)\n\n👇 اضغط على الزر بالأسفل لبدء اختيار الأصول 👇",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+        return
 
+    if data == "admin_panel":
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            await query.answer("⛔ عذراً، هذه اللوحة مخصصة لمالك البوت فقط.", show_alert=True)
+            return
+        admin_text = (
+            f"⚙️ **لوحة إدارة البوت (المشرف):**\n\n"
+            f"👥 المستخدمون المسموح لهم: `{len(ALLOWED_USERS)}`\n"
+            f"📈 التحليلات المجراة اليوم: `{DAILY_ANALYSES_COUNT}`\n\n"
+            f"📌 لإضافة مستخدم جديد، استخدم الأمر:\n`/add username`"
+        )
+        keyboard = [
+            [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(admin_text, reply_markup=reply_markup, parse_mode="Markdown")
+        return
+    
     if data.startswith("market_"):
         market_name = data.split("_")[1]
         user_selections[user_id] = {"market": market_name}
