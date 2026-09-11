@@ -122,7 +122,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
         
-if data.startswith("tf_"):
+    if data.startswith("tf_"):
         tf_name = data.split("_")[1]
         if user_id in user_selections:
             user_selections[user_id]["timeframe"] = tf_name
