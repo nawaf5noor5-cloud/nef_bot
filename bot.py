@@ -59,12 +59,13 @@ MARKETS = [
 def calculate_volatility(indicators):
     """حساب مؤشر التقلب المتقدم بناءً على قوة المؤشرات"""
     avg_score = sum(indicators.values()) / len(indicators)
-    if avg_score >= 90:
-        return "⚡ تذبذب عالي جداً (مخاطرة مرتفعة) ⚠️"
-    elif avg_score >= 82:
-        return "🌊 تذبذب نشط ومناسب للفرص القوية 🟢"
+    
+    if avg_score >= 80 or avg_score < 52:
+        return "🔥 تذبذب عالي جداً (مخاطرة مرتفعة)"
+    elif avg_score >= 68:
+        return "🟢 تذبذب نشط ومناسب للفرص القوية"
     else:
-        return "🛡️ تذبذب هادئ ومستقر (آمن للتداول) 🔵"
+        return "🌊 تذبذب هادئ ومستقر (آمن للتداول)"
 
 def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
     """ محرك خبير متقدم: جلب بيانات حقيقية للأصول العالمية أو محاكاة ذكية للأصول الابتكارية """
