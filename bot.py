@@ -199,8 +199,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
     if data.startswith("tf_"):
-        global DAILY_ANALYSES_COUNT
-        DAILY_ANALYSES_COUNT += 1
+        globals()['DAILY_ANALYSES_COUNT'] = globals().get('DAILY_ANALYSES_COUNT', 0) + 1
 
         tf_name = data.split("_")[1]
         if user_id in user_selections:
