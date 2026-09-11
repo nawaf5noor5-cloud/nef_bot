@@ -91,8 +91,8 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
             if not data.empty:
                 close_prices = data['Close'].squeeze()
                 change = (close_prices.iloc[-1] - close_prices.iloc[0]) / close_prices.iloc[0] * 100
-                base_score = int(50 + (change * 5))
-                base_score = max(35, min(95, base_score))
+                base_score = int(88 + (change * 5))
+        base_score = max(90, min(98, base_score))
                 
                 return {
                     "Alligator": base_score + random.randint(-4, 4),
