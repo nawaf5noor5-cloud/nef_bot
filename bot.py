@@ -78,13 +78,7 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
         "apple": "AAPL",
         "intel": "INTC",
         "corn": "ZC=F",
-        "coffee": "KC=F",
-        "football": "FOOTBALL",
-        "smarty": "SMARTY",
-        "luxury index": "LUX",
-        "camel race index": "CAMEL",
-        "cricket index": "CRIC",
-        "ai index": "AI"
+        "coffee": "KC=F"
     }
     
     clean_name = market_name.lower().strip()
