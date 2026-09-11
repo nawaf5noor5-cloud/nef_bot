@@ -2,6 +2,7 @@ import time
 import requests
 import logging
 import random
+import yfinance as yf
 import threading
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -48,6 +49,13 @@ def save_users():
 # عداد التحليلات اليومية
 DAILY_ANALYSES_COUNT = 0
 
+MARKETS = [
+    "eur/usd", "gbp/usd", "usd/cad", "gbp/chf",
+    "football", "smarty", "luxury index", "camel race index",
+    "corn", "tesla", "apple", "intel",
+    "cricket index", "ai index", "coffee"
+]
+
 def calculate_volatility(indicators):
     """حساب مؤشر التقلب المتقدم بناءً على قوة المؤشرات"""
     avg_score = sum(indicators.values()) / len(indicators)
@@ -58,10 +66,59 @@ def calculate_volatility(indicators):
     else:
         return "🛡️ تذبذب هادئ ومستقر (آمن للتداول) 🔵"
 
-def advanced_expert_indicator_engine(is_buy_trend):
-    """ محرك خبير متقدم (خبرة 50 عاماً): حسابات عميلة ومحللة للمؤشرات """
+def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
+    """ محرك خبير متقدم: جلب بيانات حقيقية للأصول العالمية أو محاكاة ذكية للأصول الابتكارية """
+    
+    symbols_map = {
+        "eur/usd": "EURUSD=X",
+        "gbp/usd": "GBPUSD=X",
+        "usd/cad": "USDCAD=X",
+        "gbp/chf": "GBPCHF=X",
+        "tesla": "TSLA",
+        "apple": "AAPL",
+        "intel": "INTC",
+        "corn": "ZC=F",
+        "coffee": "KC=F",
+        "football": "FOOTBALL",
+        "smarty": "SMARTY",
+        "luxury index": "LUX",
+        "camel race index": "CAMEL",
+        "cricket index": "CRIC",
+        "ai index": "AI"
+    }
+    
+    clean_name = market_name.lower().strip()
+    
+    if clean_name in symbols_map:
+        try:
+            ticker_symbol = symbols_map[clean_name]
+            data = yf.download(ticker_symbol, period="5d", interval="1d", progress=False)
+            if not data.empty:
+                close_prices = data['Close'].squeeze()
+                change = (close_prices.iloc[-1] - close_prices.iloc[0]) / close_prices.iloc[0] * 100
+                base_score = int(50 + (change * 5))
+                base_score = max(35, min(95, base_score))
+                
+                return {
+                    "Alligator": base_score + random.randint(-4, 4),
+                    "MACD": base_score + random.randint(-2, 5),
+                    "SMA": base_score + random.randint(-5, 3),
+                    "Bollinger": base_score + random.randint(-3, 3),
+                    "Aroon": base_score + random.randint(-4, 4),
+                    "RSI": base_score + random.randint(-6, 6),
+                    "Parabolic SAR": base_score + random.randint(-3, 4),
+                    "Fractals": base_score + random.randint(-2, 3),
+                    "Momentum": base_score + random.randint(-5, 5),
+                    "Awesome": base_score + random.randint(-4, 4),
+                    "CCI": base_score + random.randint(-6, 6),
+                    "Williams": random.randint(20, 80)
+                }
+        except Exception as e:
+            print(f"Error fetching live data for {market_name}: {e}")
+
+    # للأصول الابتكارية أو في حال تعذر الجلب
     if is_buy_trend:
-        indicators = {
+        return {
             "Alligator": random.randint(65, 99),
             "MACD": random.randint(60, 98),
             "SMA": random.randint(55, 95),
@@ -76,7 +133,7 @@ def advanced_expert_indicator_engine(is_buy_trend):
             "Williams": random.randint(15, 85)
         }
     else:
-        indicators = {
+        return {
             "Alligator": random.randint(40, 85),
             "MACD": random.randint(30, 80),
             "SMA": random.randint(35, 82),
@@ -90,7 +147,6 @@ def advanced_expert_indicator_engine(is_buy_trend):
             "CCI": random.randint(25, 77),
             "Williams": random.randint(20, 90)
         }
-    return indicators
 
 ALLOWED_USERS = load_users()
 ALLOWED_USERS = load_users()
@@ -242,7 +298,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         confidence = random.randint(85, 96)
 
         # 1. استدعاء المحرك الخبير الخفي لتحليل المؤشرات بعمق
-        indicators = advanced_expert_indicator_engine(is_buy)
+        indicators = advanced_expert_indicator_engine(is_buy, market)
         
         # حساب مؤشر التقلب المتقدم
         volatility_index = calculate_volatility(indicators)
