@@ -94,7 +94,7 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
                 base_score = int(88 + (change * 5))
         base_score = max(90, min(98, base_score))
                 
-                return {
+        return {
                     "Alligator": base_score + random.randint(-4, 4),
                     "MACD": base_score + random.randint(-2, 5),
                     "SMA": base_score + random.randint(-5, 3),
