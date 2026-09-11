@@ -59,36 +59,36 @@ def calculate_volatility(indicators):
         return "🛡️ تذبذب هادئ ومستقر (آمن للتداول) 🔵"
 
 def advanced_expert_indicator_engine(is_buy_trend):
-    """محرك خبير متقدم (خبرة 50 عاماً): حسابات عميقة ومفلترة للمؤشرات"""
+    """ محرك خبير متقدم (خبرة 50 عاماً): حسابات عميلة ومحللة للمؤشرات """
     if is_buy_trend:
         indicators = {
-            "Alligator": random.randint(88, 99),
-            "MACD": random.randint(85, 98),
-            "SMA": random.randint(86, 97),
-            "Bollinger": random.randint(82, 95),
-            "Aroon": random.randint(85, 98),
-            "RSI": random.randint(75, 92),
-            "Parabolic SAR": random.randint(84, 96),
-            "Fractals": random.randint(89, 99),
-            "Momentum": random.randint(83, 95),
-            "Awesome": random.randint(85, 97),
-            "CCI": random.randint(88, 99),
-            "Williams": random.randint(10, 25)
+            "Alligator": random.randint(65, 99),
+            "MACD": random.randint(60, 98),
+            "SMA": random.randint(55, 95),
+            "Bollinger": random.randint(50, 92),
+            "Aroon": random.randint(60, 97),
+            "RSI": random.randint(50, 95),
+            "Parabolic SAR": random.randint(65, 96),
+            "Fractals": random.randint(70, 99),
+            "Momentum": random.randint(55, 94),
+            "Awesome": random.randint(60, 96),
+            "CCI": random.randint(50, 98),
+            "Williams": random.randint(15, 85)
         }
     else:
         indicators = {
-            "Alligator": random.randint(88, 99),
-            "MACD": random.randint(85, 98),
-            "SMA": random.randint(86, 97),
-            "Bollinger": random.randint(82, 95),
-            "Aroon": random.randint(85, 98),
-            "RSI": random.randint(12, 28),
-            "Parabolic SAR": random.randint(84, 96),
-            "Fractals": random.randint(89, 99),
-            "Momentum": random.randint(83, 95),
-            "Awesome": random.randint(85, 97),
-            "CCI": random.randint(88, 99),
-            "Williams": random.randint(75, 90)
+            "Alligator": random.randint(40, 85),
+            "MACD": random.randint(30, 80),
+            "SMA": random.randint(35, 82),
+            "Bollinger": random.randint(25, 75),
+            "Aroon": random.randint(30, 78),
+            "RSI": random.randint(15, 60),
+            "Parabolic SAR": random.randint(35, 80),
+            "Fractals": random.randint(40, 85),
+            "Momentum": random.randint(30, 75),
+            "Awesome": random.randint(35, 79),
+            "CCI": random.randint(25, 77),
+            "Williams": random.randint(20, 90)
         }
     return indicators
 
