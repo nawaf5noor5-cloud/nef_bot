@@ -129,6 +129,13 @@ if data.startswith("tf_"):
         
         market = user_selections.get(user_id, {}).get("market", "العام")
         
+if data.startswith("tf_"):
+        tf_name = data.split("_")[1]
+        if user_id in user_selections:
+            user_selections[user_id]["timeframe"] = tf_name
+        
+        market = user_selections.get(user_id, {}).get("market", "العام")
+        
         await query.edit_message_text(f"📊 **جاري تحليل السوق ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
         time.sleep(1.5)
 
