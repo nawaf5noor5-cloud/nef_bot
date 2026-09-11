@@ -189,30 +189,55 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await query.edit_message_text(report_text, reply_markup=reply_markup, parse_mode="Markdown")
         return
+        
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
-    text = update.message.text.strip().lstrip("@")
+    text = update.message.text.strip()
 
-    if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-        if user_id in admin_adding_state:
-            admin_adding_state.remove(user_id)
-            ALLOWED_USERS.add(text)
-            save_users()  # حفظ المستخدمين بشكل دائم في ملف
-            await update.message.reply_text(f"✅ تم إضافة المستخدم `{text}` وحفظه بنجاح وتفعيله.", parse_mode="Markdown")
+    # أمر إضافة مستخدم محكم (يقبل اليوزر بـ @ أو بدونها)
+    if text.startswith("/add"):
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            await update.message.reply_text("⛔ عذراً، هذا الأمر مخصص لمالك البوت فقط.")
             return
+        
+        parts = text.split()
+        if len(parts) < 2:
+            await update.message.reply_text("ℹ️ **طريقة الاستخدام:**\n`/add username` أو `@username`", parse_mode="Markdown")
+            return
+            
+        clean_target = parts[1].strip().lstrip("@").lower()
+        formatted_username = f"@{clean_target}"
+        
+        if formatted_username in ALLOWED_USERS:
+            await update.message.reply_text(f"⚠️ المستخدم `{formatted_username}` موجود مسبقاً في القائمة.", parse_mode="Markdown")
+            return
+            
+        ALLOWED_USERS.add(formatted_username)
+        save_users()  # الحفظ الدائم في الملف
+        await update.message.reply_text(f"✅ **تم بنجاح:** تمت إضافة المستخدم `{formatted_username}` وحفظه في السيرفر.", parse_mode="Markdown")
+        return
 
-        if user_id in admin_deleting_state:
-            admin_deleting_state.remove(user_id)
-            if text in ALLOWED_USERS:
-                if text == str(INITIAL_ADMIN_ID):
-                    await update.message.reply_text("⚠️ لا يمكنك حذف المالك الأساسي.")
-                    return
-                ALLOWED_USERS.remove(text)
-                save_users()  # تحديث الملف بعد الحذف
-                await update.message.reply_text(f"🗑️ تم حذف المستخدم `{text}` بنجاح.", parse_mode="Markdown")
-            else:
-                await update.message.reply_text("❌ هذا المستخدم غير موجود في القائمة.")
+    # أمر حذف مستخدم محكم ودقيق
+    if text.startswith("/remove"):
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            await update.message.reply_text("⛔ عذراً، هذا الأمر مخصص لمالك البوت فقط.")
             return
+            
+        parts = text.split()
+        if len(parts) < 2:
+            await update.message.reply_text("ℹ️ **طريقة الاستخدام:**\n`/remove username` أو `@username`", parse_mode="Markdown")
+            return
+            
+        clean_target = parts[1].strip().lstrip("@").lower()
+        formatted_username = f"@{clean_target}"
+        
+        if formatted_username in ALLOWED_USERS:
+            ALLOWED_USERS.remove(formatted_username)
+            save_users()  # التحديث والحفظ الدائم
+            await update.message.reply_text(f"🗑️ **تم بنجاح:** تمت إزالة المستخدم `{formatted_username}` من القائمة.", parse_mode="Markdown")
+        else:
+            await update.message.reply_text(f"⚠️ المستخدم `{formatted_username}` غير موجود في القائمة أصلاً.", parse_mode="Markdown")
+        return
 
 def evaluate_market_condition(indicators_dict):
     """
