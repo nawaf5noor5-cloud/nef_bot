@@ -18,14 +18,32 @@ from telegram.ext import (
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 log = logging.getLogger(__name__)
 
-# الإعدادات والمتغيرات الأساسية
-TOKEN = "8968520359:AAESqyjdclJazAWLauGlTOzxdW_79rNGxPU"
+import json
+import os
+
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
-ALLOWED_USERS = {INITIAL_ADMIN_ID}
+USERS_FILE = "allowed_users.json"
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        try:
+            with open(USERS_FILE, "r") as f:
+                return set(json.load(f))
+        except:
+            pass
+    return {INITIAL_ADMIN_ID}
+
+def save_users():
+    try:
+        with open(USERS_FILE, "w") as f:
+            json.dump(list(ALLOWED_USERS), f)
+    except:
+        pass
+
+ALLOWED_USERS = load_users()
 admin_adding_state = set()
 admin_deleting_state = set()
 user_selections = {}
-
 MARKETS = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "Gold", "Silver", "Tesla", "Apple", "Amazon", "Smarty", "Football"]
 TIMEFRAMES = ["30 ثانية", "1 دقيقة", "2 دقيقة", "5 دقائق", "15 دقيقة", "30 دقيقة"]
 
@@ -231,13 +249,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
-    text = update.message.text.strip().lstrip("@")  # إزالة علامة @ تلقائياً لضمان حفظ المعرف بشكل صحيح
+    text = update.message.text.strip().lstrip("@")
 
     if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
         if user_id in admin_adding_state:
             admin_adding_state.remove(user_id)
             ALLOWED_USERS.add(text)
-            await update.message.reply_text(f"✅ تم إضافة المستخدم `{text}` بنجاح وتفعيله.", parse_mode="Markdown")
+            save_users()  # حفظ المستخدمين بشكل دائم في ملف
+            await update.message.reply_text(f"✅ تم إضافة المستخدم `{text}` وحفظه بنجاح وتفعيله.", parse_mode="Markdown")
             return
 
         if user_id in admin_deleting_state:
@@ -247,6 +266,7 @@ async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYP
                     await update.message.reply_text("⚠️ لا يمكنك حذف المالك الأساسي.")
                     return
                 ALLOWED_USERS.remove(text)
+                save_users()  # تحديث الملف بعد الحذف
                 await update.message.reply_text(f"🗑️ تم حذف المستخدم `{text}` بنجاح.", parse_mode="Markdown")
             else:
                 await update.message.reply_text("❌ هذا المستخدم غير موجود في القائمة.")
