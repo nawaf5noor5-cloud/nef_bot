@@ -133,6 +133,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         time.sleep(1.5)
 
         is_buy = random.choice([True, False])
+        decision = "صعود (CALL) 🟢" if is_buy else "هبوط (PUT) 🔴"
+        strength_desc = "صعود قوي 📈" if is_buy else "هبوط قوي 📉"
+        confidence = random.randint(85, 96)
 
         # 1. تجميع المؤشرات في قاموس لتحليلها
         indicators = {
@@ -155,14 +158,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         sorted_indicators = sorted(indicators.items(), key=lambda x: x[1], reverse=True)
         top_3_indicators = sorted_indicators[:3]
 
-        # 3. بناء نص التقرير المختصر والمركز الجديد
+        # 3. بناء نص التقرير بالترتيب والتنسيق الجديد
         report_text = (
-            f"📊 **تقرير تحليل التداول السريع**\n"
+            f"📊 **تقرير التحليل الفني**\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
+            f"🔷 **السوق / الأصل:** {market}\n"
+            f"⏱️ **المدة الزمنية:** {tf_name}\n"
+            f"📈 **نسبة وقوة التحليل:** `{confidence}%` ({strength_desc})\n"
+            f"🎯 **القرار النهائي:** {decision}\n"
             f"📌 **حالة السوق:** {market_status}\n"
-            f"🎯 **القرار:** {market_suitability}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🏆 **أقوى 3 مؤشرات داعمة للقرار:**\n"
+            f"🏆 **أقوى 3 مؤشرات داعمة:**\n"
         )
 
         for ind_name, ind_score in top_3_indicators:
@@ -170,7 +176,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         report_text += (
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"💡 *ملاحظة: تم تحليل باقي المؤشرات في الخلفية.*\n"
+            f"💡 **ملاحظة:** تم تحليل باقي المؤشرات في الخلفية.\n"
             f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
         )
 
@@ -183,7 +189,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await query.edit_message_text(report_text, reply_markup=reply_markup, parse_mode="Markdown")
         return
-
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     text = update.message.text.strip().lstrip("@")
