@@ -121,13 +121,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
         return
-
-if data.startswith("tf_"):
-        tf_name = data.split("_")[1]
-        if user_id in user_selections:
-            user_selections[user_id]["timeframe"] = tf_name
-        
-        market = user_selections.get(user_id, {}).get("market", "العام")
         
 if data.startswith("tf_"):
         tf_name = data.split("_")[1]
@@ -140,9 +133,6 @@ if data.startswith("tf_"):
         time.sleep(1.5)
 
         is_buy = random.choice([True, False])
-        decision = "صعود (CALL)" if is_buy else "هبوط (PUT)"
-        strength_desc = "صعود قوي" if is_buy else "هبوط قوي"
-        confidence = random.randint(85, 96)
 
         # 1. تجميع المؤشرات في قاموس لتحليلها
         indicators = {
@@ -165,7 +155,7 @@ if data.startswith("tf_"):
         sorted_indicators = sorted(indicators.items(), key=lambda x: x[1], reverse=True)
         top_3_indicators = sorted_indicators[:3]
 
-        # 3. بناء نص التقرير المختصر والمركز
+        # 3. بناء نص التقرير المختصر والمركز الجديد
         report_text = (
             f"📊 **تقرير تحليل التداول السريع**\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
