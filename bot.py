@@ -22,7 +22,7 @@ import json
 import os
 
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
-TOKEN = "8968520359:AAESqyjd1JazAwLauG1TOzxdW_79rNGxPU"
+TOKEN = "8968520359:AAFvKf7M2lnhJpCZxzaHauwlQG16ClZqCqc"
 # استخدام المسار المطلق لضمان حفظ الملف بجانب ملف البوت دائماً
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "allowed_users.json")
