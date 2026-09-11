@@ -177,15 +177,39 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"⚙️ **لوحة إدارة البوت (المشرف):**\n\n"
             f"👥 المستخدمون المسموح لهم: `{len(ALLOWED_USERS)}`\n"
             f"📈 التحليلات المجراة اليوم: `{DAILY_ANALYSES_COUNT}`\n\n"
-            f"📌 للإدارة السريعة، استخدم الأوامر التالية في المحادثة:\n"
-            f"• لإضافة مستخدم: `/add المعرف`\n"
-            f"• لحذف مستخدم: `/remove المعرف`"
+            f"📌 اختر الإجراء المطلوب أدناه:"
         )
         keyboard = [
+            [InlineKeyboardButton("📋 عرض جميع المستخدمين", callback_data="admin_list_users")],
+            [
+                InlineKeyboardButton("➕ إضافة مستخدم", callback_data="admin_add_prompt"),
+                InlineKeyboardButton("➖ حذف مستخدم", callback_data="admin_remove_prompt")
+            ],
             [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(admin_text, reply_markup=reply_markup, parse_mode="Markdown")
+        return
+
+    if data == "admin_list_users":
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            return
+        users_list_str = "\n".join([f"• `{u}`" for u in ALLOWED_USERS]) if ALLOWED_USERS else "لا يوجد مستخدمون."
+        text = f"📋 **قائمة المستخدمين المسموح لهم:**\n\n{users_list_str}"
+        keyboard = [[InlineKeyboardButton("🔙 رجوع لوحة الإدارة", callback_data="admin_panel")]]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        return
+
+    if data == "admin_add_prompt":
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            return
+        await query.message.reply_text("➕ لإضافة مستخدم جديد، أرسل الأمر هكذا:\n`/add معرف_المستخدم`", parse_mode="Markdown")
+        return
+
+    if data == "admin_remove_prompt":
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            return
+        await query.message.reply_text("➖ لحذف مستخدم، أرسل الأمر هكذا:\n`/remove معرف_المستخدم`", parse_mode="Markdown")
         return
     
     if data.startswith("market_"):
