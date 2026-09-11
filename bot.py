@@ -177,7 +177,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"⚙️ **لوحة إدارة البوت (المشرف):**\n\n"
             f"👥 المستخدمون المسموح لهم: `{len(ALLOWED_USERS)}`\n"
             f"📈 التحليلات المجراة اليوم: `{DAILY_ANALYSES_COUNT}`\n\n"
-            f"📌 لإضافة مستخدم جديد، استخدم الأمر:\n`/add username`"
+            f"📌 للإدارة السريعة، استخدم الأوامر التالية في المحادثة:\n"
+            f"• لإضافة مستخدم: `/add المعرف`\n"
+            f"• لحذف مستخدم: `/remove المعرف`"
         )
         keyboard = [
             [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
@@ -362,6 +364,40 @@ def self_ping():
             pass
         time.sleep(120)  # يرسل طلباً كل دقيقتين ليبقى البوت نشطاً على مدار الساعة
 
+async def add_user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+        await update.message.reply_text("⛔ غير مسموح لك باستخدام هذا الأمر.")
+        return
+    
+    if not context.args:
+        await update.message.reply_text("❌ الرجاء كتابة المعرف بعد الأمر، مثال:\n`/add 123456789`", parse_mode="Markdown")
+        return
+    
+    new_user = context.args[0]
+    if new_user not in ALLOWED_USERS:
+        ALLOWED_USERS.append(new_user)
+        await update.message.reply_text(f"✅ تم إضافة المستخدم `{new_user}` بنجاح لقائمة المسموح لهم.", parse_mode="Markdown")
+    else:
+        await update.message.reply_text(f"⚠️ المستخدم `{new_user}` موجود مسبقاً في القائمة.", parse_mode="Markdown")
+
+async def remove_user_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+        await update.message.reply_text("⛔ غير مسموح لك باستخدام هذا الأمر.")
+        return
+    
+    if not context.args:
+        await update.message.reply_text("❌ الرجاء كتابة المعرف المراد حذفه، مثال:\n`/remove 123456789`", parse_mode="Markdown")
+        return
+    
+    target_user = context.args[0]
+    if target_user in ALLOWED_USERS:
+        ALLOWED_USERS.remove(target_user)
+        await update.message.reply_text(f"🗑️ تم حذف المستخدم `{target_user}` من القائمة بنجاح.", parse_mode="Markdown")
+    else:
+        await update.message.reply_text(f"⚠️ المستخدم `{target_user}` غير موجود في القائمة الأساسية.", parse_mode="Markdown")
+
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
     threading.Thread(target=self_ping, daemon=True).start()
@@ -369,6 +405,8 @@ def main():
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("add", add_user_command))
+    application.add_handler(CommandHandler("remove", remove_user_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
 
