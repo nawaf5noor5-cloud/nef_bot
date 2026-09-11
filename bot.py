@@ -22,24 +22,29 @@ import json
 import os
 
 INITIAL_ADMIN_ID = "420693139"  # معرف المالك
-USERS_FILE = "allowed_users.json"
+# استخدام المسار المطلق لضمان حفظ الملف بجانب ملف البوت دائماً
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USERS_FILE = os.path.join(BASE_DIR, "allowed_users.json")
 
 def load_users():
     if os.path.exists(USERS_FILE):
         try:
-            with open(USERS_FILE, "r") as f:
-                return set(json.load(f))
-        except:
+            with open(USERS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return set(data)
+        except Exception:
             pass
     return {INITIAL_ADMIN_ID}
 
 def save_users():
     try:
-        with open(USERS_FILE, "w") as f:
-            json.dump(list(ALLOWED_USERS), f)
-    except:
-        pass
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(list(ALLOWED_USERS), f, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving users: {e}")
 
+ALLOWED_USERS = load_users()
 ALLOWED_USERS = load_users()
 admin_adding_state = set()
 admin_deleting_state = set()
