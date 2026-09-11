@@ -156,7 +156,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown"
         )
         return
-if data == "main_menu":
+    if data == "main_menu":
         keyboard = [
             [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
             [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
