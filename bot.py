@@ -149,7 +149,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 for ind_name, ind_score in top_3_indicators:
     report_text += f"▪️ {ind_name}: `{ind_score}%`\n"
 
-report_text += (
+    report_text += (
     f"━━━━━━━━━━━━━━━━━━━\n"
     f"💡 *ملاحظة: تم تحليل باقي المؤشرات في الخلفية.*"
 )
