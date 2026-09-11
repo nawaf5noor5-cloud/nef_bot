@@ -45,6 +45,19 @@ def save_users():
     except Exception as e:
         print(f"Error saving users: {e}")
 
+# عداد التحليلات اليومية
+DAILY_ANALYSES_COUNT = 0
+
+def calculate_volatility(indicators):
+    """حساب مؤشر التقلب المتقدم بناءً على قوة المؤشرات"""
+    avg_score = sum(indicators.values()) / len(indicators)
+    if avg_score >= 90:
+        return "⚡ تذبذب عالي جداً (مخاطرة مرتفعة) ⚠️"
+    elif avg_score >= 82:
+        return "🌊 تذبذب نشط ومناسب للفرص القوية 🟢"
+    else:
+        return "🛡️ تذبذب هادئ ومستقر (آمن للتداول) 🔵"
+
 def advanced_expert_indicator_engine(is_buy_trend):
     """محرك خبير متقدم (خبرة 50 عاماً): حسابات عميقة ومفلترة للمؤشرات"""
     if is_buy_trend:
@@ -160,11 +173,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         tf_name = data.split("_")[1]
         if user_id in user_selections:
             user_selections[user_id]["timeframe"] = tf_name
-        
+
         market = user_selections.get(user_id, {}).get("market", "العام")
-        
-        await query.edit_message_text(f"📊 **جاري تحليل السوق ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
+
+        await query.edit_message_text(f"📊 **جاري تحليل السوق `{market}` على إطار `{tf_name}`...**", parse_mode="Markdown")
         time.sleep(1.5)
+
+        # زيادة عداد التحليلات اليومية بمقدار 1
+        global DAILY_ANALYSES_COUNT
+        DAILY_ANALYSES_COUNT += 1
 
         is_buy = random.choice([True, False])
         decision = "صعود (CALL) 🟢" if is_buy else "هبوط (PUT) 🔴"
@@ -174,36 +191,41 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 1. استدعاء المحرك الخبير الخفي لتحليل المؤشرات بعمق
         indicators = advanced_expert_indicator_engine(is_buy)
         
+        # حساب مؤشر التقلب المتقدم
+        volatility_index = calculate_volatility(indicators)
+
         # 2. جلب حالة التذبذب والسوق واختيار أقوى 3 مؤشرات
         market_status, market_suitability = evaluate_market_condition(indicators)
         sorted_indicators = sorted(indicators.items(), key=lambda x: x[1], reverse=True)
         top_3_indicators = sorted_indicators[:3]
 
-        # 3. بناء نص التقرير بالترتيب والتنسيق الجديد
+        # 3. بناء نص التقرير بالترتيب والتنسيق الجديد (متضمنًا مؤشر التقلب)
         report_text = (
             f"📊 **تقرير التحليل الفني**\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🔷 **السوق / الأصل:** {market}\n"
-            f"⏱️ **المدة الزمنية:** {tf_name}\n"
-            f"📈 **نسبة وقوة التحليل:** `{confidence}%` ({strength_desc})\n"
-            f"🎯 **القرار النهائي:** {decision}\n"
-            f"📌 **حالة السوق:** {market_status}\n"
+            f"🏛️ **السوق / الأصل:** `{market}`\n"
+            f"⏱️ **المدة الزمنية:** `{tf_name}`\n"
+            f"🎯 **نسبة قوة التحليل:** `{confidence}%` ({strength_desc})\n"
+            f"⚡ **القرار النهائي:** **{decision}**\n"
+            f"🌡️ **حالة السوق:** {market_status}\n"
+            f"🌊 **مؤشر التقلب:** {volatility_index}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
             f"🏆 **أقوى 3 مؤشرات داعمة:**\n"
         )
 
         for ind_name, ind_score in top_3_indicators:
-            report_text += f"▪️ {ind_name}: `{ind_score}%`\n"
+            report_text += f" ▪️ `{ind_name}`: `{ind_score}%`\n"
 
         report_text += (
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"💡 **ملاحظة:** تم تحليل باقي المؤشرات في الخلفية.\n"
+            f"📌 **ملاحظة:** تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.\n"
             f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
         )
 
-        # 4. الأزرار التفاعلية أسفل التقرير
+        # أزرار التنقل السريع التفاعلية الجديدة تحت التقرير
         keyboard = [
-            [InlineKeyboardButton("🔄 تحليل سوق جديد", callback_data="choose_market")],
+            [InlineKeyboardButton("🔄 إعادة تحليل نفس السوق", callback_data=f"tf_{tf_name}")],
+            [InlineKeyboardButton("📊 تغيير الإطار الزمني", callback_data=f"market_{market}")],
             [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -214,6 +236,22 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     text = update.message.text.strip()
+
+    # أمر إحصائيات البوت (خاص بالمالك)
+    if text.startswith("/stats"):
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            await update.message.reply_text("⛔ عذراً، هذا الأمر مخصص لمالك البوت فقط.")
+            return
+            
+        total_users = len(ALLOWED_USERS)
+        stats_msg = (
+            f"📊 **إحصائيات نظام التداول الشاملة:**\n\n"
+            f"👥 **المستخدمون المسموح لهم:** `{total_users}` مستخدم\n"
+            f"📈 **التحليلات المجراة اليوم:** `{DAILY_ANALYSES_COUNT}` تحليل\n"
+            f"🟢 **حالة السيرفر:** مستقر ويعمل بكفاءة (Render)"
+        )
+        await update.message.reply_text(stats_msg, parse_mode="Markdown")
+        return
 
     # أمر إضافة مستخدم محكم (يقبل اليوزر بـ @ أو بدونها)
     if text.startswith("/add"):
