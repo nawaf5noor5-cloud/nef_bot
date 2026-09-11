@@ -111,36 +111,36 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
         except Exception as e:
             print(f"Error fetching live data for {market_name}: {e}")
 
-    # للأصول الابتكارية أو في حال تعذر الجلب
+    # للأصول الابتكارية أو في حال تعذر الجلب #
     if is_buy_trend:
         return {
-            "Alligator": random.randint(65, 99),
-            "MACD": random.randint(60, 98),
-            "SMA": random.randint(55, 95),
-            "Bollinger": random.randint(50, 92),
-            "Aroon": random.randint(60, 97),
-            "RSI": random.randint(50, 95),
-            "Parabolic SAR": random.randint(65, 96),
-            "Fractals": random.randint(70, 99),
-            "Momentum": random.randint(55, 94),
-            "Awesome": random.randint(60, 96),
-            "CCI": random.randint(50, 98),
-            "Williams": random.randint(15, 85)
+            "Alligator": random.randint(92, 99),
+            "MACD": random.randint(90, 98),
+            "SMA": random.randint(91, 99),
+            "Bollinger": random.randint(90, 97),
+            "Aroon": random.randint(93, 99),
+            "RSI": random.randint(90, 96),
+            "Parabolic SAR": random.randint(92, 98),
+            "Fractals": random.randint(91, 99),
+            "Momentum": random.randint(90, 97),
+            "Awesome": random.randint(92, 98),
+            "CCI": random.randint(90, 96),
+            "Williams": random.randint(92, 99)
         }
     else:
         return {
-            "Alligator": random.randint(40, 85),
-            "MACD": random.randint(30, 80),
-            "SMA": random.randint(35, 82),
-            "Bollinger": random.randint(25, 75),
-            "Aroon": random.randint(30, 78),
-            "RSI": random.randint(15, 60),
-            "Parabolic SAR": random.randint(35, 80),
-            "Fractals": random.randint(40, 85),
-            "Momentum": random.randint(30, 75),
-            "Awesome": random.randint(35, 79),
-            "CCI": random.randint(25, 77),
-            "Williams": random.randint(20, 90)
+            "Alligator": random.randint(92, 99),
+            "MACD": random.randint(90, 98),
+            "SMA": random.randint(91, 99),
+            "Bollinger": random.randint(90, 97),
+            "Aroon": random.randint(93, 99),
+            "RSI": random.randint(90, 96),
+            "Parabolic SAR": random.randint(92, 98),
+            "Fractals": random.randint(91, 99),
+            "Momentum": random.randint(90, 97),
+            "Awesome": random.randint(92, 98),
+            "CCI": random.randint(90, 96),
+            "Williams": random.randint(92, 99)
         }
 
 ALLOWED_USERS = load_users()
