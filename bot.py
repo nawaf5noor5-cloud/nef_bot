@@ -155,7 +155,7 @@ report_text += (
 )
 
 await query.edit_message_text(report_text, parse_mode="Markdown")
-    # 1. تجميع المؤشرات في قاموس لتحليلها
+# 1. تجميع المؤشرات في قاموس لتحليلها
     indicators = {
         "Alligator": random.randint(70, 95),
         "MACD": random.randint(75, 96),
@@ -192,7 +192,7 @@ await query.edit_message_text(report_text, parse_mode="Markdown")
     report_text += (
         f"━━━━━━━━━━━━━━━━━━━\n"
         f"💡 *ملاحظة: تم تحليل باقي المؤشرات في الخلفية.*\n"
-        f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.**"
+        f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
     )
 
     # 4. الأزرار التفاعلية أسفل التقرير
