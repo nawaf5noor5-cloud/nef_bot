@@ -122,159 +122,69 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if data.startswith("tf_"):
+if data.startswith("tf_"):
         tf_name = data.split("_")[1]
         if user_id in user_selections:
             user_selections[user_id]["timeframe"] = tf_name
         
         market = user_selections.get(user_id, {}).get("market", "العام")
         
-        await query.edit_message_text(f"🔄 **جاري تحليل السوق لـ ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
+        await query.edit_message_text(f"📊 **جاري تحليل السوق ({market}) على إطار ({tf_name})...**", parse_mode="Markdown")
         time.sleep(1.5)
-        
+
         is_buy = random.choice([True, False])
         decision = "صعود (CALL)" if is_buy else "هبوط (PUT)"
         strength_desc = "صعود قوي" if is_buy else "هبوط قوي"
         confidence = random.randint(85, 96)
-        
+
+        # 1. تجميع المؤشرات في قاموس لتحليلها
+        indicators = {
+            "Alligator": random.randint(70, 95),
+            "MACD": random.randint(75, 96),
+            "SMA": random.randint(72, 94),
+            "Bollinger": random.randint(68, 92),
+            "Aroon": random.randint(70, 95),
+            "RSI": random.randint(60, 88) if is_buy else random.randint(20, 40),
+            "Parabolic SAR": random.randint(65, 90),
+            "Fractals": random.randint(75, 98),
+            "Momentum": random.randint(65, 88),
+            "Awesome": random.randint(70, 93),
+            "CCI": random.randint(78, 99),
+            "Williams": random.randint(15, 35)
+        }
+
+        # 2. جلب حالة التذبذب والسوق واختيار أقوى 3 مؤشرات
+        market_status, market_suitability = evaluate_market_condition(indicators)
+        sorted_indicators = sorted(indicators.items(), key=lambda x: x[1], reverse=True)
+        top_3_indicators = sorted_indicators[:3]
+
+        # 3. بناء نص التقرير المختصر والمركز
         report_text = (
-    f"📊 **تقرير تحليل التداول السريع**\n"
-    f"━━━━━━━━━━━━━━━━━━━\n"
-    f"📌 **حالة السوق:** {market_status}\n"
-    f"🎯 **القرار:** {market_suitability}\n"
-    f"━━━━━━━━━━━━━━━━━━━\n"
-    f"🏆 **أقوى 3 مؤشرات داعمة للقرار:**\n"
-)
+            f"📊 **تقرير تحليل التداول السريع**\n"
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"📌 **حالة السوق:** {market_status}\n"
+            f"🎯 **القرار:** {market_suitability}\n"
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"🏆 **أقوى 3 مؤشرات داعمة للقرار:**\n"
+        )
 
-for ind_name, ind_score in top_3_indicators:
-    report_text += f"▪️ {ind_name}: `{ind_score}%`\n"
+        for ind_name, ind_score in top_3_indicators:
+            report_text += f"▪️ {ind_name}: `{ind_score}%`\n"
 
-    report_text += (
-    f"━━━━━━━━━━━━━━━━━━━\n"
-    f"💡 *ملاحظة: تم تحليل باقي المؤشرات في الخلفية.*"
-)
+        report_text += (
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"💡 *ملاحظة: تم تحليل باقي المؤشرات في الخلفية.*\n"
+            f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
+        )
 
-await query.edit_message_text(report_text, parse_mode="Markdown")
-    # 1. تجميع المؤشرات في قاموس لتحليلها
-    indicators = {
-        "Alligator": random.randint(70, 95),
-        "MACD": random.randint(75, 96),
-        "SMA": random.randint(72, 94),
-        "Bollinger": random.randint(68, 92),
-        "Aroon": random.randint(70, 95),
-        "RSI": random.randint(60, 88) if is_buy else random.randint(20, 40),
-        "Parabolic SAR": random.randint(65, 90),
-        "Fractals": random.randint(75, 98),
-        "Momentum": random.randint(65, 88),
-        "Awesome": random.randint(70, 93),
-        "CCI": random.randint(78, 99),
-        "Williams": random.randint(15, 35)
-    }
-
-    # 2. جلب حالة التذبذب والسوق واختيار أقوى 3 مؤشرات
-    market_status, market_suitability = evaluate_market_condition(indicators)
-    sorted_indicators = sorted(indicators.items(), key=lambda x: x[1], reverse=True)
-    top_3_indicators = sorted_indicators[:3]
-
-    # 3. بناء نص التقرير المختصر والمركز
-    report_text = (
-        f"📊 **تقرير تحليل التداول السريع**\n"
-        f"━━━━━━━━━━━━━━━━━━━\n"
-        f"📌 **حالة السوق:** {market_status}\n"
-        f"🎯 **القرار:** {market_suitability}\n"
-        f"━━━━━━━━━━━━━━━━━━━\n"
-        f"🏆 **أقوى 3 مؤشرات داعمة للقرار:**\n"
-    )
-
-    for ind_name, ind_score in top_3_indicators:
-        report_text += f"▪️ {ind_name}: `{ind_score}%`\n"
-
-    report_text += (
-        f"━━━━━━━━━━━━━━━━━━━\n"
-        f"💡 *ملاحظة: تم تحليل باقي المؤشرات في الخلفية.*\n"
-        f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
-    )
-
-    # 4. الأزرار التفاعلية أسفل التقرير
-    keyboard = [
-        [InlineKeyboardButton("🔄 تحليل سوق جديد", callback_data="choose_market")],
-        [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await query.edit_message_text(report_text, reply_markup=reply_markup, parse_mode="Markdown")
-    return
-
-    if data == "main_menu":
+        # 4. الأزرار التفاعلية أسفل التقرير
         keyboard = [
-            [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
-            [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
+            [InlineKeyboardButton("🔄 تحليل سوق جديد", callback_data="choose_market")],
+            [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            "🤖 **القائمة الرئيسية:**\nاختر من الأزرار أدناه:",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
-        return
 
-    if data == "admin_panel":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            admin_adding_state.discard(user_id)
-            admin_deleting_state.discard(user_id)
-            keyboard = [
-                [InlineKeyboardButton("➕ إضافة مستخدم جديد", callback_data="add_user")],
-                [InlineKeyboardButton("🗑️ حذف مستخدم مسجل", callback_data="remove_user")],
-                [InlineKeyboardButton("📋 عرض المستخدمين", callback_data="list_users")],
-                [InlineKeyboardButton("🔙 رجوع للقائمة الرئيسية", callback_data="main_menu")]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                "⚙️ **لوحة إدارة المستخدمين (المالك):**",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-        else:
-            await query.edit_message_text("⚙️ **لوحة إدارة المستخدمين:**\nعذراً، هذه اللوحة خاصة بمالك البوت فقط.", parse_mode="Markdown")
-        return
-
-    if data == "add_user":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            admin_adding_state.add(user_id)
-            admin_deleting_state.discard(user_id)
-            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                "➕ **إضافة مستخدم جديد:**\nالرجاء إرسال **المعرف** في رسالة الآن:",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-        return
-
-    if data == "remove_user":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            admin_deleting_state.add(user_id)
-            admin_adding_state.discard(user_id)
-            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
-            keyboard = [[InlineKeyboardButton("❌ إلغاء", callback_data="admin_panel")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                f"🗑️ **حذف مستخدم:**\nالحاليون:\n{users_list}\n\nأرسل **المعرف المراد حذفه**:",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
-        return
-
-    if data == "list_users":
-        if INITIAL_ADMIN_ID and user_id == str(INITIAL_ADMIN_ID):
-            users_list = "\n".join([f"• {u}" for u in ALLOWED_USERS])
-            keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await query.edit_message_text(
-                f"📋 **المستخدمون المسموح لهم:**\n{users_list}",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
+        await query.edit_message_text(report_text, reply_markup=reply_markup, parse_mode="Markdown")
         return
 
 async def handle_text_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
