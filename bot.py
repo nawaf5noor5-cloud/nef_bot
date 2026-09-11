@@ -85,31 +85,35 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
     clean_name = market_name.lower().strip()
     
     if clean_name in symbols_map:
-        try:
-            ticker_symbol = symbols_map[clean_name]
-            data = yf.download(ticker_symbol, period="5d", interval="1d", progress=False)
-            if not data.empty:
-                close_prices = data['Close'].squeeze()
-                change = (close_prices.iloc[-1] - close_prices.iloc[0]) / close_prices.iloc[0] * 100
-                base_score = int(88 + (change * 5))
-        base_score = max(90, min(98, base_score))
-                
-        return {
-                    "Alligator": base_score + random.randint(-4, 4),
-                    "MACD": base_score + random.randint(-2, 5),
-                    "SMA": base_score + random.randint(-5, 3),
-                    "Bollinger": base_score + random.randint(-3, 3),
-                    "Aroon": base_score + random.randint(-4, 4),
-                    "RSI": base_score + random.randint(-6, 6),
-                    "Parabolic SAR": base_score + random.randint(-3, 4),
-                    "Fractals": base_score + random.randint(-2, 3),
-                    "Momentum": base_score + random.randint(-5, 5),
-                    "Awesome": base_score + random.randint(-4, 4),
-                    "CCI": base_score + random.randint(-6, 6),
-                    "Williams": random.randint(20, 80)
-                }
-        except Exception as e:
-            print(f"Error fetching live data for {market_name}: {e}")
+      try:
+        ticker_symbol = symbols_map[clean_name]
+        data = yf.download(
+            ticker_symbol, period="5d", interval="1d", progress=False
+        )
+        if not data.empty:
+          close_prices = data["Close"].squeeze()
+          change = (
+              close_prices.iloc[-1] - close_prices.iloc[0]
+          ) / close_prices.iloc[0] * 100
+          base_score = int(88 + (change * 5))
+          base_score = max(90, min(98, base_score))
+
+          return {
+              "Alligator": base_score + random.randint(-4, 4),
+              "MACD": base_score + random.randint(-2, 5),
+              "SMA": base_score + random.randint(-5, 3),
+              "Bollinger": base_score + random.randint(-3, 3),
+              "Aroon": base_score + random.randint(-4, 4),
+              "RSI": base_score + random.randint(-6, 6),
+              "Parabolic SAR": base_score + random.randint(-3, 4),
+              "Fractals": base_score + random.randint(-2, 3),
+              "Momentum": base_score + random.randint(-5, 5),
+              "Awesome": base_score + random.randint(-4, 4),
+              "CCI": base_score + random.randint(-6, 6),
+              "Williams": random.randint(20, 80),
+          }
+      except Exception as e:
+        print(f"Error fetching live data for {market_name}: {e}")
 
     # للأصول الابتكارية أو في حال تعذر الجلب #
     if is_buy_trend:
