@@ -129,7 +129,7 @@ def detect_market_peaks_and_troughs(candles_data):
     }
 
 # --- دالة إصدار التوصية الذكية وربط الوقت ---
-def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
+def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60, **kwargs):
     """
     توليد التقرير والإشارات بناءً على تحليل حقيقي لبيانات الشموع
     بشكل ديناميكي بالكامل وبدون أي قيم ثابتة أو وهمية.
