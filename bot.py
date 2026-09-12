@@ -295,7 +295,7 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
         }
 
     # للأصول الابتكارية أو في حال تعذر الجلب #
-    def calculate_sma_percentage(candles):
+def calculate_sma_percentage(candles):
     """حساب نسبة واتجاه SMA بناءً على أسعار الإغلاق الحقيقية"""
     if not candles or len(candles) < 5:
         return 50  # قيمة افتراضية آمنة إذا كانت الشموع قليلة
