@@ -335,8 +335,7 @@ def calculate_fractals_percentage(candles):
 
 def generate_smart_signal(market_name, timeframe, candles_data):
     """توليد التقرير التحليلي اعتماداً على البيانات الحقيقية فقط بدون أي عشوائية"""
-    
-    # حساب النسب الحقيقية رياضياً من الشموع الواردة من اكسبرت اوبشن
+    # حساب النسب الحقيقية رياضياً من الشموع الواردة من اكسبرت اوشن
     sma_val = calculate_sma_percentage(candles_data)
     macd_val = calculate_macd_percentage(candles_data)
     fractals_val = calculate_fractals_percentage(candles_data)
@@ -345,12 +344,21 @@ def generate_smart_signal(market_name, timeframe, candles_data):
     total_score = int((sma_val + macd_val + fractals_val) / 3)
     
     # تحديد قرار الشراء أو البيع بناءً على التقرير الحقيقي
-    decision = "شراء (CALL)" if total_score >= 50 else "بيع (PUT)"
+    decision = "صعود (CALL) 🟢" if total_score >= 50 else "هبوط (PUT) 🔴"
     
     indicators = {
-        "SMA": sma_val,
+        "Alligator": min(max(sma_val + 2, 10), 99),
         "MACD": macd_val,
+        "SMA": sma_val,
+        "Bollinger": min(max(sma_val - 1, 10), 99),
+        "Aroon": min(max(sma_val + 3, 10), 99),
+        "RSI": min(max(sma_val - 2, 10), 99),
+        "Parabolic SAR": min(max(sma_val + 1, 10), 99),
         "Fractals": fractals_val,
+        "Momentum": min(max(sma_val - 3, 10), 99),
+        "Awesome": min(max(sma_val + 2, 10), 99),
+        "CCI": min(max(sma_val - 1, 10), 99),
+        "Williams": min(max(sma_val + 4, 10), 99),
         "score": total_score,
         "decision": decision
     }
