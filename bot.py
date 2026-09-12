@@ -232,9 +232,9 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
 """
     return report
 
-    except Exception as e:
-        print(f"CRITICAL ERROR in generate_smart_signal: {e}")
-        return f"❌ حدث خطأ داخلي أثناء معالجة التحليل: {str(e)}"
+except Exception as e:
+    print(f"CRITICAL ERROR in generate_smart_signal: {e}")
+    return f"حدث خطأ أثناء معالجة التحليل: {str(e)}"
         
 def calculate_volatility(indicators):
     """حساب مؤشر التقلب وحالة السوق بناء على متوسط قوة المؤشرات بدقة متنامية"""
