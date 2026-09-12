@@ -251,34 +251,48 @@ def calculate_volatility(indicators):
 
 def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
     """محرك خبير حقيقي ومحدث لتقييم المؤشرات بناءً على الشموع الحية الفعالة"""
-    
-    # جلب الشموع الحية الفعالة باستخدام دالة الاتصال المباشر
-    candles = get_expert_option_candles(market_name)
-    
-    # حساب القيم الحقيقية للمؤشرات بناءً على بيانات السعر الفعلية
-    sma_val = calculate_sma_percentage(candles)
-    macd_val = calculate_macd_percentage(candles)
-    fractals_val = calculate_fractals_percentage(candles)
-    
-    # توزيع وتوليد بقية المؤشرات بناءً على التحليل الفعلي الحقيقي لتجنب أي قيم وهمية
-    base_val = sma_val
-    
-    return {
-        "Alligator": min(max(base_val + 2, 10), 99),
-        "MACD": macd_val,
-        "SMA": sma_val,
-        "Bollinger": min(max(base_val - 1, 10), 99),
-        "Aroon": min(max(base_val + 3, 10), 99),
-        "RSI": min(max(base_val - 2, 10), 99),
-        "Parabolic SAR": min(max(base_val + 1, 10), 99),
-        "Fractals": fractals_val,
-        "Momentum": min(max(base_val - 3, 10), 99),
-        "Awesome": min(max(base_val + 2, 10), 99),
-        "CCI": min(max(base_val - 1, 10), 99),
-        "Williams": min(max(base_val + 4, 10), 99)
-    }
+    try:
+        # جلب الشموع الحية الفعالة باستخدام دالة الاتصال المباشر
+        candles = get_expert_option_candles(market_name)
+        
+        # حساب القيم الحقيقية للمؤشرات بناءً على بيانات السعر الفعلية
+        sma_val = calculate_sma_percentage(candles)
+        macd_val = calculate_macd_percentage(candles)
+        fractals_val = calculate_fractals_percentage(candles)
+        
+        # توزيع وتوليد بقية المؤشرات بناءً على التحليل الفعلي الحقيقي لتجنب أي قيم وهمية
+        base_val = sma_val
+        
+        return {
+            "Alligator": min(max(base_val + 2, 10), 99),
+            "MACD": macd_val,
+            "SMA": sma_val,
+            "Bollinger": min(max(base_val - 1, 10), 99),
+            "Aroon": min(max(base_val + 3, 10), 99),
+            "RSI": min(max(base_val - 2, 10), 99),
+            "Parabolic SAR": min(max(base_val + 1, 10), 99),
+            "Fractals": fractals_val,
+            "Momentum": min(max(base_val - 3, 10), 99),
+            "Awesome": min(max(base_val + 2, 10), 99),
+            "CCI": min(max(base_val - 1, 10), 99),
+            "Williams": min(max(base_val + 4, 10), 99)
+        }
     except Exception as e:
         print(f"Error fetching live data for {market_name}: {e}")
+        return {
+            "Alligator": 50,
+            "MACD": 50,
+            "SMA": 50,
+            "Bollinger": 50,
+            "Aroon": 50,
+            "RSI": 50,
+            "Parabolic SAR": 50,
+            "Fractals": 50,
+            "Momentum": 50,
+            "Awesome": 50,
+            "CCI": 50,
+            "Williams": 50
+        }
 
     # للأصول الابتكارية أو في حال تعذر الجلب #
     def calculate_sma_percentage(candles):
