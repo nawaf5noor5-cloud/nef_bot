@@ -4,6 +4,7 @@ import logging
 import json
 import os
 import random
+import threading
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -163,7 +164,7 @@ def calculate_volatility(candles_data):
         
     return volatility_state, market_state
 
-# --- دالة إصدار التقرير النهائي الذكي (تم تعديل المدخلات لتصبح مرنة ومنع الأخطاء) ---
+# --- دالة إصدار التقرير النهائي الذكي ---
 def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
     try:
         sma_val = calculate_sma_percentage(candles_data)
