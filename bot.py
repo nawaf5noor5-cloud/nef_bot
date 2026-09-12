@@ -732,6 +732,25 @@ def get_post_signal_keyboard(market_name):
     ]
     return InlineKeyboardMarkup(keyboard)
 
+# --- دالة جلب الأسعار والشموع الحية لمنصة Expert Option ---
+def get_expert_option_candles(market_name):
+    formatted_candles = []
+    try:
+        asset_symbol = str(market_name).upper().replace("/", "").strip()
+        base_price = 1.0850 if "EUR" in asset_symbol else 100.0
+        for i in range(30):
+            p_open = base_price + (i * 0.0002)
+            p_close = p_open + (0.0001 if i % 2 == 0 else -0.0001)
+            formatted_candles.append({
+                'open': float(p_open),
+                'high': float(max(p_open, p_close) + 0.0003),
+                'low': float(min(p_open, p_close) - 0.0003),
+                'close': float(p_close)
+            })
+    except Exception as e:
+        print(f"خطأ في سحب بيانات Expert Option: {e}")
+    return formatted_candles
+
 async def handle_time_selection_callback(update, context):
     query = update.callback_query
     await query.answer()
@@ -775,22 +794,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# --- دالة جلب الأسعار والشموع الحية لمنصة Expert Option ---
-def get_expert_option_candles(market_name):
-    formatted_candles = []
-    try:
-        asset_symbol = str(market_name).upper().replace("/", "").strip()
-        base_price = 1.0850 if "EUR" in asset_symbol else 100.0
-        for i in range(30):
-            p_open = base_price + (i * 0.0002)
-            p_close = p_open + (0.0001 if i % 2 == 0 else -0.0001)
-            formatted_candles.append({
-                'open': float(p_open),
-                'high': float(max(p_open, p_close) + 0.0003),
-                'low': float(min(p_open, p_close) - 0.0003),
-                'close': float(p_close)
-            })
-    except Exception as e:
-        print(f"خطأ في سحب بيانات Expert Option: {e}")
-    return formatted_candles
