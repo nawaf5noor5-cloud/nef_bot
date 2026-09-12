@@ -50,10 +50,10 @@ def load_users():
             with open(USERS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    return set(data)
+                    return set(str(u) for u in data)
         except Exception:
             pass
-    return {INITIAL_ADMIN_ID}
+    return {str(INITIAL_ADMIN_ID)}
 
 def save_users():
     try:
@@ -292,11 +292,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if data == "main_menu":
-        keyboard = [
-            [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")],
-            [InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        reply_markup = get_main_menu_keyboard(user_id)
         await query.edit_message_text(
             "🤖 **البوت الذكي وخبير التداول**\n\n🟢 الحالة: نشط (يعمل 24/7)\n\n👇 اضغط على الزر بالأسفل لبدء اختيار الأصول 👇",
             reply_markup=reply_markup,
@@ -315,7 +311,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📌 اختر الإجراء المطلوب أدناه:"
         )
         keyboard = [
-            [InlineKeyboardButton("📋 عرض جميع المستخدمين", callback_data="admin_list_users")],
+            [InlineKeyboardButton("📋 جميع المستخدمين", callback_data="admin_list_users")],
+            [
+                InlineKeyboardButton("➕ إضافة مستخدم", callback_data="admin_add_prompt"),
+                InlineKeyboardButton("🗑️ حذف مستخدم", callback_data="admin_remove_prompt")
+            ],
             [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -327,6 +327,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         users_list_str = "\n".join([f"• `{u}`" for u in ALLOWED_USERS]) if ALLOWED_USERS else "لا يوجد مستخدمون."
         text = f"📋 **قائمة المستخدمين المسموح لهم:**\n\n{users_list_str}"
+        keyboard = [[InlineKeyboardButton("🔙 رجوع لوحة الإدارة", callback_data="admin_panel")]]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        return
+
+    if data == "admin_add_prompt":
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            return
+        context.user_data["waiting_for"] = "add_user"
+        text = "➕ **إضافة مستخدم جديد:**\n\nأرسل الآن (معرف الآيدي ID) أو (اليوزر مع @) الخاص بالمستخدم المراد إضافته:"
+        keyboard = [[InlineKeyboardButton("🔙 رجوع لوحة الإدارة", callback_data="admin_panel")]]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        return
+
+    if data == "admin_remove_prompt":
+        if INITIAL_ADMIN_ID and user_id != str(INITIAL_ADMIN_ID):
+            return
+        context.user_data["waiting_for"] = "remove_user"
+        text = "🗑️ **حذف مستخدم:**\n\nأرسل الآن (معرف الآيدي ID) أو (اليوزر مع @) الخاص بالمستخدم المراد حذفه:"
         keyboard = [[InlineKeyboardButton("🔙 رجوع لوحة الإدارة", callback_data="admin_panel")]]
         await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         return
