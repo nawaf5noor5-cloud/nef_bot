@@ -1,9 +1,7 @@
 import time
 import requests
 import logging
-import websocket
 import json
-import threading
 import os
 import random
 from flask import Flask
@@ -27,7 +25,6 @@ TOKEN = "8968520359:AAFvKf7M2lnhJpCZxzaHauwlQG16ClZqCqc"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "allowed_users.json")
-STATS_FILE = os.path.join(BASE_DIR, "bot_stats.json")
 
 DAILY_ANALYSES_COUNT = 0
 
@@ -72,14 +69,9 @@ def is_authorized(user_id: str) -> bool:
 
 # --- دوال جلب الأسعار والشموع (Binance + Smart Fallback) ---
 def get_market_candles(market_name):
-    """
-    جلب الشموع والأسعار مباشرة من Binance للأزواج الرسمية،
-    وتحليل الأصول الخاصة (مثل football و smarty) ديناميكياً عبر الوسيط الذكي.
-    """
     formatted_candles = []
     clean_market = str(market_name).upper().strip()
     
-    # 1. محاولة السحب المباشر من واجهة Binance الرسمية
     try:
         binance_symbol = clean_market.replace("/", "").replace("-", "")
         if not binance_symbol.endswith("USDT") and not binance_symbol.endswith("BUSD"):
@@ -92,7 +84,6 @@ def get_market_candles(market_name):
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, list) and len(data) > 0:
-                print(f"[MARKET ENGINE] --- جلب بيانات السوق بنجاح من Binance لـ {market_name} ---")
                 for kline in data:
                     formatted_candles.append({
                         "open": float(kline[1]),
@@ -104,8 +95,7 @@ def get_market_candles(market_name):
     except Exception as e:
         print(f"[MARKET ENGINE] Binance fetch note for {market_name}: {e}")
 
-    # 2. الوسيط الذكي الاحتياطي (Smart Fallback) للأصول الخاصة
-    print(f"[SMART FALLBACK] --- تشغيل الوسيط الديناميكي لتحليل مؤشرات {market_name} ---")
+    # الوسيط الذكي الاحتياطي (Smart Fallback)
     base_price = 250.0 if "SMARTY" in clean_market else (50.0 if "FOOTBALL" in clean_market else 100.0)
     current_val = base_price
     
@@ -173,7 +163,7 @@ def calculate_volatility(candles_data):
         
     return volatility_state, market_state
 
-# --- دالة إصدار التقرير النهائي الذكي ---
+# --- دالة إصدار التقرير النهائي الذكي (تم تعديل المدخلات لتصبح مرنة ومنع الأخطاء) ---
 def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
     try:
         sma_val = calculate_sma_percentage(candles_data)
@@ -376,7 +366,7 @@ async def handle_time_selection_callback(update: Update, context: ContextTypes.D
             time.sleep(1.0)
             
             candles_data = get_market_candles(market_name)
-            recommendation = generate_smart_signal(market_name, "manual", candles_data, seconds)
+            recommendation = generate_smart_signal(market_name, "manual", candles_data, manual_seconds=seconds)
             reply_markup = get_post_signal_keyboard(market_name)
             await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
             
