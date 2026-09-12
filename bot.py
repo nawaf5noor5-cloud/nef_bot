@@ -495,68 +495,67 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     if data.startswith("tf_"):
         globals()['DAILY_ANALYSES_COUNT'] = globals().get('DAILY_ANALYSES_COUNT', 0) + 1
-
+        
         tf_name = data.split("_")[1]
         if user_id in user_selections:
             user_selections[user_id]["timeframe"] = tf_name
-
+            
         market = user_selections.get(user_id, {}).get("market", "العام")
-
-        await query.edit_message_text(f"📊 **جاري تحليل السوق `{market}` على إطار `{tf_name}`...**", parse_mode="Markdown")
+        await query.edit_message_text(f"📊 جارٍ تحليل السوق `{market}` على إطار `{tf_name}`...")
         time.sleep(1.5)
-
+        
         # 1. جلب الشموع الحية الفعالة للسوق المحدد من Expert Option
-    candles_data = get_expert_option_candles(market)
-    
-    # 2. توليد المؤشرات والتحليل بناءً على الأسعار والشموع الحقيقية فقط
-    indicators = generate_smart_signal(market, tf_name, candles_data)
-    
-    # 3. تحديد الاتجاه والقرار والنسبة بناءً على التحليل الفني الحقيقي
-    score = indicators.get("score", 50)
-    is_buy = score >= 50
-    decision = "صعود (CALL) 🟢" if is_buy else "هبوط (PUT) 🔴"
-    strength_desc = "قوي جداً" if abs(score - 50) > 25 else "معتدل"
-    confidence = score if score >= 50 else (100 - score)
+        candles_data = get_expert_option_candles(market)
+        
+        # 2. توليد المؤشرات والتحليل بناءً على الأسعار والشموع الحقيقية فقط
+        indicators = generate_smart_signal(market, tf_name, candles_data)
+        
+        # 3. تحديد الاتجاه والقرار والنسبة بناءً على التحليل الفني الحقيقي
+        score = indicators.get("score", 50)
+        is_buy = score >= 50
+        decision = "صعود (CALL) 🟢" if is_buy else "هبوط (PUT) 🔴"
+        strength_desc = "قوي جداً" if abs(score - 50) > 25 else "معتدل"
+        confidence = score if score >= 50 else (100 - score)
         
         # حساب مؤشر التقلب المتقدم
         volatility_index = calculate_volatility(indicators)
-
+        
         # 2. جلب حالة التذبذب والسوق واختيار أقوى 3 مؤشرات
         market_status, market_suitability = evaluate_market_condition(indicators)
         sorted_indicators = sorted(indicators.items(), key=lambda x: x[1], reverse=True)
         top_3_indicators = sorted_indicators[:3]
-
-        # 3. بناء نص التقرير بالترتيب والتنسيق الجديد (متضمنًا مؤشر التقلب)
+        
+        # بناء نص التقرير بالترتيب والتنسيق الجديد (متضمناً مؤشر التقلب)
         report_text = (
-            f"📊 **تقرير التحليل الفني**\n"
-            f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🏛️ **السوق / الأصل:** `{market}`\n"
-            f"⏱️ **المدة الزمنية:** `{tf_name}`\n"
-            f"🎯 **نسبة قوة التحليل:** `{confidence}%` ({strength_desc})\n"
-            f"⚡ **القرار النهائي:** **{decision}**\n"
-            f"🌡️ **حالة السوق:** {market_status}\n"
-            f"🌊 **مؤشر التقلب:** {volatility_index}\n"
-            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"📈 **تقرير التحليل الفني**\n"
+            f"--------------------\n"
+            f"🔹 **السوق / الأصل:** `{market}`\n"
+            f"🔹 **المدة الزمنية:** `{tf_name}`\n"
+            f"🔹 **نسبة قوة التحليل:** `{confidence}%` ({strength_desc})\n"
+            f"🔹 **القرار النهائي:** **{decision}**\n"
+            f"🔹 **حالة السوق:** `{market_status}`\n"
+            f"🔹 **مؤشر التقلب:** `{volatility_index}`\n"
+            f"--------------------\n"
             f"🏆 **أقوى 3 مؤشرات داعمة:**\n"
         )
-
+        
         for ind_name, ind_score in top_3_indicators:
-            report_text += f" ▪️ `{ind_name}`: `{ind_score}%`\n"
-
+            report_text += f" - `{ind_name}`: `{ind_score}%`\n"
+            
         report_text += (
-            f"━━━━━━━━━━━━━━━━━━━\n"
-            f"📌 **ملاحظة:** تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.\n"
-            f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال."
+            f"--------------------\n"
+            f"⚠️ **ملاحظة:** تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.\n"
+            f"⚠️ **التنبيه:** التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.\n"
         )
-
+        
         # أزرار التنقل السريع التفاعلية الجديدة تحت التقرير
         keyboard = [
             [InlineKeyboardButton("🔄 إعادة تحليل نفس السوق", callback_data=f"tf_{tf_name}")],
-            [InlineKeyboardButton("📊 تغيير الإطار الزمني", callback_data=f"market_{market}")],
+            [InlineKeyboardButton("⏱️ تغيير الإطار الزمني", callback_data=f"market_{market}")],
             [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-
+        
         await query.edit_message_text(report_text, reply_markup=reply_markup, parse_mode="Markdown")
         return
         
