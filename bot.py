@@ -210,24 +210,27 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
             secs = sec_num % 60
             final_duration = f"{mins} دقيقة و {secs} ثانية"
 
-        # 4. بناء التقرير النهائي بالقيم الحقيقية المتغيرة
-        report = (
-            f"📊 تقرير التحليل الفني\n\n"
-            f"🏛 السوق / الأصل: **{str(market_name).upper()}**\n"
-            f"⏱ المدة الزمنية: **{final_duration}**\n"
-            f"🎯 نسبة وقوة التحليل: **{analysis_percentage}% ({trend})**\n"
-            f"⚡ القرار النهائي: **{decision_type}**\n"
-            f"⏱ نوع الوقت: **{time_type_text}**\n\n"
-            f"🌡 حالة السوق: **{market_status}**\n"
-            f"🌊 مؤشر التقلب: **{volatility_status}**\n\n"
-            f"🏆 أقوى 3 مؤشرات داعمة:\n"
-            f"■ SMA: {indicators.get('SMA')}\n"
-            f"■ MACD: {indicators.get('MACD')}\n"
-            f"■ Fractals: {indicators.get('Fractals')}\n\n"
-            f"📌 ملاحظة: **تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.**\n"
-            f"⚠️ التنبيه: **التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.**"
-        )
-        return report
+        # بناء التقرير النهائي بالترتيب والشروط المطلوبة
+    report = f"""📊 تقرير التحليل الفني 📈
+
+🏛 السوق / الأصل: {str(market_name).upper()}
+⏰ المدة الزمنية: {final_duration}
+🎯 نسبة قوة التحليل: {analysis_percentage}% 📈
+⚡️ القرار النهائي: {decision_type}
+⏱ نوع الوقت: {time_type_text} ⚡️
+
+🌡 حالة السوق: {market_status}
+🌊 مؤشر التقلب: {volatility_status}
+
+🏆 أقوى 3 مؤشرات داعمة:
+◼️ SMA: {indicators.get('SMA')}
+◼️ MACD: {indicators.get('MACD')}
+◼️ Fractals: {indicators.get('Fractals')}
+
+📌 ملاحظة: تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.
+⚠️ التنبيه: التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.
+"""
+    return report
 
     except Exception as e:
         print(f"CRITICAL ERROR in generate_smart_signal: {e}")
@@ -346,26 +349,50 @@ def generate_smart_signal(market_name, timeframe, candles_data):
     # تحديد قرار الشراء أو البيع بناءً على التقرير الحقيقي
     decision = "صعود (CALL) 🟢" if total_score >= 50 else "هبوط (PUT) 🔴"
     
-    report_text = f"""📊 **تقرير التحليل الفني لزوج ({market_name})**
-⏱ **الإطار الزمني:** {timeframe}
+    r# --- التحليل الخفي لحالة السوق ومؤشر التقلب بناءً على الشموع الحقيقية ---
+    try:
+        closes = [c['close'] for c in candles_data] if candles_data else [1.0]
+        highs = [c['high'] for c in candles_data] if candles_data else [1.0]
+        lows = [c['low'] for c in candles_data] if candles_data else [1.0]
+        
+        avg_range = sum([h - l for h, l in zip(highs, lows)]) / len(candles_data) if candles_data else 0
+        price_volatility = avg_range / (sum(closes) / len(closes)) * 100 if closes and sum(closes) > 0 else 0
 
-🔹 **المؤشرات الحية:**
-• Alligator: `{min(max(sma_val + 2, 10), 99)}%`
-• MACD: `{macd_val}%`
-• SMA: `{sma_val}%`
-• Bollinger: `{min(max(sma_val - 1, 10), 99)}%`
-• Aroon: `{min(max(sma_val + 3, 10), 99)}%`
-• RSI: `{min(max(sma_val - 2, 10), 99)}%`
-• Parabolic SAR: `{min(max(sma_val + 1, 10), 99)}%`
-• Fractals: `{fractals_val}%`
-• Momentum: `{min(max(sma_val - 3, 10), 99)}%`
-• Awesome: `{min(max(sma_val + 2, 10), 99)}%`
-• CCI: `{min(max(sma_val - 1, 10), 99)}%`
-• Williams: `{min(max(sma_val + 4, 10), 99)}%`
+        if price_volatility > 0.15:
+            market_state = "آمن التداول"
+            volatility_state = "تذبذب عالي وحركة قوية"
+        elif 0.05 <= price_volatility <= 0.15:
+            market_state = "مستقر"
+            volatility_state = "تذبذب متوسط وطبيعي"
+        else:
+            market_state = "مخاطره"
+            volatility_state = "تذبذب منخفض وهادئ جداً"
+            
+    except Exception:
+        market_state = "مستقر"
+        volatility_state = "تذبذب متوسط وطبيعي"
 
-📈 **النسبة الإجمالية (Score):** `{total_score}%`
-🎯 **القرار المقترح:** {decision}
+    # --- بناء شكل التقرير النهائي بالترتيب المطلوب ---
+    report_text = f"""📊 تقرير التحليل الفني 📈
+
+🏛 السوق / الأصل: {market_name}
+⏰ المدة الزمنية: {timeframe}
+🎯 نسبة قوة التحليل: {total_score}% 📈
+⚡️ القرار النهائي: {decision}
+⏱ نوع الوقت: تلقائي (ذكاء البوت) ⚡️
+
+🌡 حالة السوق: {market_state}
+🌊 مؤشر التقلب: {volatility_state}
+
+🏆 أقوى 3 مؤشرات داعمة:
+◼️ SMA: {sma_val}%
+◼️ MACD: {macd_val}%
+◼️ Fractals: {fractals_val}%
+
+📌 ملاحظة: تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.
+⚠️ التنبيه: التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.
 """
+
     return report_text
 
 ALLOWED_USERS = load_users()
