@@ -56,6 +56,107 @@ MARKETS = [
     "cricket index", "ai index", "coffee"
 ]
 
+# --- نظام اختيار السوق والوقت (تلقائي أو يدوي) ---
+class MarketTimeSelector:
+    def __init__(self):
+        self.selected_market = None
+        self.time_mode = None  # 'manual' أو 'auto'
+        self.manual_duration = None  # بالثواني (يدوي)
+        
+    def select_market(self, market_name: str):
+        """الخطوة الأولى: اختيار السوق"""
+        self.selected_market = market_name
+        
+    def configure_time_setting(self, mode: str, manual_seconds: int = None):
+        """الخطوة الثانية: اختيار نوع الوقت (تلقائي أو يدوي)"""
+        self.time_mode = mode.lower()
+        if self.time_mode == "manual":
+            if manual_seconds in [30, 60, 120, 180]:
+                self.manual_duration = manual_seconds
+            else:
+                self.manual_duration = 60 # افتراضي في حال الخطأ
+        elif self.time_mode == "auto":
+            self.manual_duration = None
+            
+    def get_final_duration(self, analyzed_volatility: str, analyzed_momentum: float) -> int:
+        """حساب الوقت تلقائياً أو إعادة الوقت اليدوي"""
+        if self.time_mode == "manual":
+            return self.manual_duration
+            
+        # منطق التوقيت التلقائي (من 30 ثانية إلى 3 دقائق)
+        if analyzed_momentum > 80 and analyzed_volatility == "high":
+            return 30   
+        elif analyzed_momentum > 60:
+            return 60   
+        elif analyzed_volatility == "low":
+            return 180  
+        else:
+            return 120
+
+# --- خوارزمية كشف القمم والقيعان (Peak & Trough) ---
+def detect_market_peaks_and_troughs(candles_data):
+    """
+    تحليل قائمة الشموع لتحديد القمم (Swing Highs) والقيعان (Swing Lows)
+    """
+    if not candles_data or len(candles_data) < 5:
+        return {"swing_high": 0, "swing_low": 0, "trend": "neutral"}
+
+    highs = [candle['high'] for candle in candles_data]
+    lows = [candle['low'] for candle in candles_data]
+    current_close = candles_data[-1]['close']
+
+    swing_high = max(highs)
+    swing_low = min(lows)
+
+    mid_point = (swing_high + swing_low) / 2
+    if current_close > mid_point:
+        trend = "bullish"  
+    else:
+        trend = "bearish"  
+
+    return {
+        "swing_high": swing_high,
+        "swing_low": swing_low,
+        "current_price": current_close,
+        "trend": trend
+    }
+
+# --- دالة إصدار التوصية الذكية وربط الوقت ---
+def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
+    """
+    توليد التوصية بناءً على القمم والقيعان وتحديد الوقت (تلقائي أو يدوي)
+    """
+    # 1. تهيئة نظام الوقت
+    time_manager = MarketTimeSelector()
+    time_manager.select_market(market_name)
+    time_manager.configure_time_setting(time_mode, manual_seconds)
+    
+    # 2. تحليل القمم والقيعان والاتجاه
+    market_analysis = detect_market_peaks_and_troughs(candles_data)
+    trend = market_analysis['trend']
+    current_price = market_analysis['current_price']
+    
+    # محاكاة لقوة الزخم والتذبذب لغرض الوقت التلقائي
+    volatility = "high" if trend != "neutral" else "low"
+    momentum_strength = 85 if trend == "bullish" else 50
+    
+    # 3. الحصول على الوقت النهائي (إما يدوي أو محسوب تلقائياً من 30 ثانية إلى 3 دقائق)
+    final_duration = time_manager.get_final_duration(volatility, momentum_strength)
+    
+    # 4. بناء التوصية النهائية
+    signal_type = "BUY (CALL) 📈" if trend == "bullish" else "SELL (PUT) 📉"
+    
+    recommendation = (
+        f"🎯 **توصية بوت التداول**\n"
+        f"📊 **السوق:** {market_name.upper()}\n"
+        f"💡 **الإشارة:** {signal_type}\n"
+        f"⏱️ **نوع الوقت:** {time_mode.upper()}\n"
+        f"⏳ **المدة المحددة للصفقة:** {final_duration} ثانية\n"
+        f"🔍 **تحليل القمم/القيعان:** السعر الحالي ({current_price}) - الاتجاه ({trend})"
+    )
+    
+    return recommendation
+
 def calculate_volatility(indicators):
   """حساب مؤشر التقلب وحالة السوق بناءً على متوسط قوة المؤشرات بدقة متناهية"""
   avg_score = sum(indicators.values()) / len(indicators)
@@ -526,6 +627,45 @@ async def statistics_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await query.message.edit_text(stats_text, reply_markup=reply_markup, parse_mode="Markdown")
 
+# --- أزرار واجهة اختيار الوقت والتوصية في تيليجرام ---
+def get_time_selection_keyboard(market_name):
+    """إنشاء أزرار اختيار الوقت بعد تحديد السوق"""
+    keyboard = [
+        [
+            InlineKeyboardButton("⚡ وقت تلقائي (ذكاء البوت)", callback_data=f"time_auto_{market_name}"),
+        ],
+        [
+            InlineKeyboardButton("⏱️ 30 ثانية", callback_data=f"time_manual_{market_name}_30"),
+            InlineKeyboardButton("⏱️ 1 دقيقة", callback_data=f"time_manual_{market_name}_60"),
+        ],
+        [
+            InlineKeyboardButton("⏱️ دقيقتان", callback_data=f"time_manual_{market_name}_120"),
+            InlineKeyboardButton("⏱️ 3 دقائق", callback_data=f"time_manual_{market_name}_180"),
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+# دالة التعامل مع ضغط الأزرار من المستخدم
+async def handle_time_selection_callback(update, context):
+    query = update.callback_query
+    await query.answer()
+    
+    data = query.data  
+    
+    if data.startswith("time_auto_"):
+        market_name = data.replace("time_auto_", "")
+        mock_candles = [{'high': 105, 'low': 95, 'close': 102}] * 6
+        recommendation = generate_smart_signal(market_name, "auto", mock_candles)
+        await query.edit_message_text(text=recommendation, parse_mode="Markdown")
+        
+    elif data.startswith("time_manual_"):
+        parts = data.split("_")
+        market_name = parts[2]
+        seconds = int(parts[3])
+        mock_candles = [{'high': 105, 'low': 95, 'close': 102}] * 6
+        recommendation = generate_smart_signal(market_name, "manual", mock_candles, manual_seconds=seconds)
+        await query.edit_message_text(text=recommendation, parse_mode="Markdown")
+
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
     threading.Thread(target=self_ping, daemon=True).start()
@@ -535,6 +675,7 @@ def main():
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("add", add_user_command))
     application.add_handler(CommandHandler("remove", remove_user_command))
+    application.add_handler(CallbackQueryHandler(handle_time_selection_callback, pattern="^time_"))
     application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
