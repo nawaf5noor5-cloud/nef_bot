@@ -875,22 +875,24 @@ async def handle_time_selection_callback(update, context):
         data = query.data
         if data.startswith("time_auto_"):
             market_name = data.replace("time_auto_", "")
-            candles_data = candles_data = get_market_candles(market_name)(market_name)
-            recommendation = candles_data = get_market_candles(market_name)(market_name, "auto", candles_data)
+            candles_data = get_market_candles(market_name)
+            recommendation = generate_smart_signal(market_name, "auto", candles_data)
             reply_markup = get_post_signal_keyboard(market_name)
             await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
+            
         elif data.startswith("time_manual_"):
             parts = data.split("_")
             market_name = parts[2]
             seconds = int(parts[3])
-            candles_data = candles_data = get_market_candles(market_name)(market_name)
+            candles_data = get_market_candles(market_name)
             recommendation = generate_smart_signal(market_name, "manual", candles_data, seconds)
             reply_markup = get_post_signal_keyboard(market_name)
             await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
+            
     except Exception as e:
         print(f"ERROR in handle_time_selection_callback: {e}")
         try:
-            await query.edit_message_text(text="⚠️ حدث خطأ مؤقت أثناء معالجة الطلب، يرجى المحاولة مرة أخرى.")
+            await query.message.reply_text(text="⚠️ حدث خطأ مؤقت أثناء معالجة الطلب، يرجى المحاولة مرة أخرى.")
         except:
             pass
 
