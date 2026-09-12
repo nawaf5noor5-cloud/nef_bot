@@ -128,7 +128,7 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         time_manager = MarketTimeSelector()
         time_manager.select_market(market_name)
         time_manager.configure_time_setting(time_mode, manual_seconds)
-        
+
         # 2. تحليل السوق والشموع بأمان
         if candles_data:
             market_analysis = detect_market_peaks_and_troughs(candles_data)
@@ -142,50 +142,50 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         # 3. حساب التقلب والزخم ديناميكياً
         volatility = "high" if abs(price_diff) > 0.5 else "low"
         momentum_strength = int(min(max(abs(price_diff) * 20, 30), 95))
-        
+
         # 4. الوقت النهائي والاتجاه
         final_duration = time_manager.get_final_duration(volatility, momentum_strength)
         if not final_duration:
             final_duration = "60 ثانية"
 
         is_buy = price_diff >= 0 if time_mode == "auto" else random.choice([True, False])
-        signal_type = "BUY (CALL) 🟢 صعود" if is_buy else "SELL (PUT) 🔴 هبوط"
-        
+        signal_type = "BUY (CALL) 🟢 شراء" if is_buy else "SELL (PUT) 🔴 بيع"
+
         # 5. التقرير المختصر والنظيف تماماً
         recommendation = (
-            f"🎯 **توصية بوت التداول**\n"
-            f"📊 **السوق:** {str(market_name).upper()}\n"
-            f"💡 **الإشارة:** {signal_type}\n"
-            f"⏱️ **نوع الوقت:** {str(time_mode).upper()}\n"
-            f"⏳ **المدة المحددة للصفقة:** {final_duration}"
+            f"📊 **توصية بوت التداول**\n"
+            f"🏛 **السوق:** **{str(market_name).upper()}**\n"
+            f"📌 **الإشارة:** **{signal_type}**\n"
+            f"⏳ **نوع الوقت:** **{str(time_mode).upper()}**\n"
+            f"⏱ **المدة المحددة للصفقة:** **{final_duration}**"
         )
         return recommendation
-        
+
     except Exception as e:
         # في حال حدوث أي خطأ طارئ، إرجاع تقرير افتراضي آمن لعدم توقف البوت
         return (
-            f"🎯 **توصية بوت التداول**\n"
-            f"📊 **السوق:** {str(market_name).upper()}\n"
-            f"💡 **الإشارة:** BUY (CALL) 🟢 صعود\n"
-            f"⏱️ **نوع الوقت:** {str(time_mode).upper()}\n"
-            f"⏳ **المدة المحددة للصفقة:** 60 ثانية"
+            f"📊 **توصية بوت التداول**\n"
+            f"🏛 **السوق:** **{str(market_name).upper()}**\n"
+            f"📌 **الإشارة:** BUY (CALL) 🟢 صعود\n"
+            f"⏳ **نوع الوقت:** **{str(time_mode).upper()}**\n"
+            f"⏱ **المدة المحددة للصفقة:** **60 ثانية**"
         )
 
 def calculate_volatility(indicators):
-  """حساب مؤشر التقلب وحالة السوق بناءً على متوسط قوة المؤشرات بدقة متناهية"""
-  avg_score = sum(indicators.values()) / len(indicators)
-
-  if avg_score >= 94:
-    volatility_status = "🔥 تذبذب قوي وممتاز للتداول (اتجاه واضح)"
-    market_status = "سوق نشط / اتجاه واضح وممتاز"
-  elif avg_score >= 90:
-    volatility_status = "🟢 تذبذب نشط ومناسب للفرص القوية"
-    market_status = "سوق مستقر / فرص تداول متاحة"
-  else:
-    volatility_status = "🌊 تذبذب هادئ ومستقر (تداول محدود)"
-    market_status = "سوق هادئ / تذبذب محدود"
-
-  return volatility_status, market_status
+    """حساب مؤشر التقلب وحالة السوق بناء على متوسط قوة المؤشرات بدقة متنامية"""
+    avg_score = sum(indicators.values()) / len(indicators)
+    
+    if avg_score >= 94:
+        volatility_status = "تذبذب قوي اتجاه واضح 🚀"
+        market_status = "آمن"
+    elif avg_score >= 90:
+        volatility_status = "تذبذب متوسط مناسب للفرص القوية 📈"
+        market_status = "مستقر"
+    else:
+        volatility_status = "تذبذب هادئ وتداول محدود 🛡️"
+        market_status = "مخاطره"
+        
+    return volatility_status, market_status
 
 def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
     """ محرك خبير متقدم: جلب بيانات حقيقية للأصول العالمية أو محاكاة ذكية للأصول الابتكارية """
