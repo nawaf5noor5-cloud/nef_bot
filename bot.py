@@ -346,24 +346,27 @@ def generate_smart_signal(market_name, timeframe, candles_data):
     # تحديد قرار الشراء أو البيع بناءً على التقرير الحقيقي
     decision = "صعود (CALL) 🟢" if total_score >= 50 else "هبوط (PUT) 🔴"
     
-    indicators = {
-        "Alligator": min(max(sma_val + 2, 10), 99),
-        "MACD": macd_val,
-        "SMA": sma_val,
-        "Bollinger": min(max(sma_val - 1, 10), 99),
-        "Aroon": min(max(sma_val + 3, 10), 99),
-        "RSI": min(max(sma_val - 2, 10), 99),
-        "Parabolic SAR": min(max(sma_val + 1, 10), 99),
-        "Fractals": fractals_val,
-        "Momentum": min(max(sma_val - 3, 10), 99),
-        "Awesome": min(max(sma_val + 2, 10), 99),
-        "CCI": min(max(sma_val - 1, 10), 99),
-        "Williams": min(max(sma_val + 4, 10), 99),
-        "score": total_score,
-        "decision": decision
-    }
-    
-    return indicators
+    report_text = f"""📊 **تقرير التحليل الفني لزوج ({market_name})**
+⏱ **الإطار الزمني:** {timeframe}
+
+🔹 **المؤشرات الحية:**
+• Alligator: `{min(max(sma_val + 2, 10), 99)}%`
+• MACD: `{macd_val}%`
+• SMA: `{sma_val}%`
+• Bollinger: `{min(max(sma_val - 1, 10), 99)}%`
+• Aroon: `{min(max(sma_val + 3, 10), 99)}%`
+• RSI: `{min(max(sma_val - 2, 10), 99)}%`
+• Parabolic SAR: `{min(max(sma_val + 1, 10), 99)}%`
+• Fractals: `{fractals_val}%`
+• Momentum: `{min(max(sma_val - 3, 10), 99)}%`
+• Awesome: `{min(max(sma_val + 2, 10), 99)}%`
+• CCI: `{min(max(sma_val - 1, 10), 99)}%`
+• Williams: `{min(max(sma_val + 4, 10), 99)}%`
+
+📈 **النسبة الإجمالية (Score):** `{total_score}%`
+🎯 **القرار المقترح:** {decision}
+"""
+    return report_text
 
 ALLOWED_USERS = load_users()
 ALLOWED_USERS = load_users()
