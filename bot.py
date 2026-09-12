@@ -251,6 +251,14 @@ def get_post_signal_keyboard(market_name):
     ]
     return InlineKeyboardMarkup(keyboard)
 
+def get_main_menu_keyboard(user_id):
+    keyboard = [
+        [InlineKeyboardButton("📊 اختر السوق أو العملة", callback_data="choose_market")]
+    ]
+    if INITIAL_ADMIN_ID and str(user_id) == str(INITIAL_ADMIN_ID):
+        keyboard.append([InlineKeyboardButton("⚙️ لوحة إدارة المستخدمين", callback_data="admin_panel")])
+    return InlineKeyboardMarkup(keyboard)
+
 # --- معالجة الأوامر والرسائل والطلبات ---
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
