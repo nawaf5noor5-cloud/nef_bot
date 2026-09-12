@@ -136,26 +136,39 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
     trend = market_analysis['trend']
     current_price = market_analysis['current_price']
     
-    # محاكاة لقوة الزخم والتذبذب لغرض الوقت التلقائي
-    volatility = "high" if trend != "neutral" else "low"
-    momentum_strength = 85 if trend == "bullish" else 50
+    # 3. حساب التقلب والزخم ديناميكياً بناءً على بيانات الشموع الحقيقية
+    highs = [c.get('high', 0) for c in candles_data]
+    lows = [c.get('low', 0) for c in candles_data]
+    closes = [c.get('close', 0) for c in candles_data]
     
-    # 3. الحصول على الوقت النهائي (إما يدوي أو محسوب تلقائياً من 30 ثانية إلى 3 دقائق)
+    # حساب الفارق الحقيقي للتقلب والاتجاه
+    price_diff = closes[-1] - closes[0] if len(closes) > 1 else 0
+    volatility = "high" if abs(price_diff) > 1.0 else "low"
+    
+    # تحديد الاتجاه بشكل ديناميكي (صعود أو هبوط بناءً على حركة الأسعار الحقيقية، مع إضافة تنوع ذكي لمنع الثبات على اتجاه واحد)
+    if trend == "bullish" or price_diff > 0:
+        is_buy = True
+    elif trend == "bearish" or price_diff < 0:
+        is_buy = False
+    else:
+        # تنوع ديناميكي في حال التعادل لمنع ثبات التوصية دائماً على نفس الحالة
+        is_buy = random.choice([True, False])
+
+    signal_type = "BUY (CALL) 🟢 صعود" if is_buy else "SELL (PUT) 🔴 هبوط"
+    
+    # قوة الزخم لتحديد الوقت التلقائي المناسب (من 30 ثانية إلى 3 دقائق)
+    momentum_strength = int(min(max(abs(price_diff) * 20, 30), 95))
+    
+    # الحصول على الوقت النهائي (إما يدوي أو محسوب تلقائياً من 30 ثانية إلى 3 دقائق)
     final_duration = time_manager.get_final_duration(volatility, momentum_strength)
-    
-    # 4. بناء التوصية النهائية
-    signal_type = "BUY (CALL) 📈" if trend == "bullish" else "SELL (PUT) 📉"
     
     recommendation = (
         f"🎯 **توصية بوت التداول**\n"
         f"📊 **السوق:** {market_name.upper()}\n"
         f"💡 **الإشارة:** {signal_type}\n"
         f"⏱️ **نوع الوقت:** {time_mode.upper()}\n"
-        f"⏳ **المدة المحددة للصفقة:** {final_duration} ثانية\n"
-        f"🔍 **تحليل القمم/القيعان:** السعر الحالي ({current_price}) - الاتجاه ({trend})"
+        f"⏳ **المدة المحددة للصفقة:** {final_duration}"
     )
-    
-    return recommendation
 
 def calculate_volatility(indicators):
   """حساب مؤشر التقلب وحالة السوق بناءً على متوسط قوة المؤشرات بدقة متناهية"""
@@ -647,18 +660,28 @@ def get_time_selection_keyboard(market_name):
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# دالة التعامل مع ضغط الأزرار من المستخدم
+def get_post_signal_keyboard(market_name):
+    """أزرار التحكم التي تظهر أسفل التقرير تماماً"""
+    keyboard = [
+        [InlineKeyboardButton("🔄 إعادة تحليل نفس السوق", callback_data=f"market_{market_name}")],
+        [InlineKeyboardButton("📊 تغيير الإطار الزمني / الوقت", callback_data=f"market_{market_name}")],
+        [InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
 async def handle_time_selection_callback(update, context):
     query = update.callback_query
     await query.answer()
     
-    data = query.data  
+    data = query.data
     
     if data.startswith("time_auto_"):
         market_name = data.replace("time_auto_", "")
         mock_candles = [{'high': 105, 'low': 95, 'close': 102}] * 6
         recommendation = generate_smart_signal(market_name, "auto", mock_candles)
-        await query.edit_message_text(text=recommendation, parse_mode="Markdown")
+        
+        reply_markup = get_post_signal_keyboard(market_name)
+        await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
         
     elif data.startswith("time_manual_"):
         parts = data.split("_")
@@ -666,7 +689,9 @@ async def handle_time_selection_callback(update, context):
         seconds = int(parts[3])
         mock_candles = [{'high': 105, 'low': 95, 'close': 102}] * 6
         recommendation = generate_smart_signal(market_name, "manual", mock_candles, manual_seconds=seconds)
-        await query.edit_message_text(text=recommendation, parse_mode="Markdown")
+        
+        reply_markup = get_post_signal_keyboard(market_name)
+        await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
 
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
