@@ -785,7 +785,7 @@ def get_post_signal_keyboard(market_name):
 
 import requests
 
-EXPERT_OPTION_TOKEN = "c025177341b29ddaf742f63964efbc90"
+EXPERT_OPTION_TOKEN = "9d7574e46a6d3d58323b282947a4e387"
 
 def get_expert_option_candles(market_name):
     """--- دالة جلب الأسعار والشموع الحقيقية من Expert Option باستخدام التوكن ---"""
