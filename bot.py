@@ -889,7 +889,7 @@ async def handle_time_selection_callback(update, context):
             market_name = parts[2]
             seconds = int(parts[3])
             candles_data = get_expert_option_candles(market_name)
-            recommendation = generate_smart_signal(market_name, "manual", candles_data, manual_seconds=seconds)
+            recommendation = generate_smart_signal(market_name, "manual", candles_data, seconds)
             reply_markup = get_post_signal_keyboard(market_name)
             await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
     except Exception as e:
