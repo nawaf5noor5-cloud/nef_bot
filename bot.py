@@ -51,10 +51,17 @@ def save_users():
 DAILY_ANALYSES_COUNT = 0
 
 MARKETS = [
-    "eur/usd", "gbp/usd", "usd/cad", "gbp/chf",
-    "football", "smarty", "luxury index", "camel race index",
-    "corn", "tesla", "apple", "intel",
-    "cricket index", "ai index", "coffee"
+    "eur/usd",
+    "usd/chf",
+    "usd/jpy",
+    "gbp/cad",
+    "football index",
+    "luxury index",
+    "camel race index",
+    "ai index",
+    "cricket index",
+    "smarty",
+    "intel"
 ]
 
 # --- نظام اختيار السوق والوقت (تلقائي أو يدوي) ---
@@ -705,6 +712,15 @@ async def statistics_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await query.message.edit_text(stats_text, reply_markup=reply_markup, parse_mode="Markdown")
 
+# --- أزرار الأسواق والمؤشرات الرسمية ---
+def get_markets_keyboard():
+    """إنشاء أزرار الأسواق تلقائياً"""
+    keyboard = []
+    for market in MARKETS:
+        keyboard.append([InlineKeyboardButton(market.upper(), callback_data=f"market_{market}")])
+    keyboard.append([InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")])
+    return InlineKeyboardMarkup(keyboard)
+    
 # --- أزرار واجهة اختيار الوقت والتوصية في تيليجرام ---
 def get_time_selection_keyboard(market_name):
     """إنشاء أزرار اختيار الوقت بعد تحديد السوق"""
@@ -734,6 +750,7 @@ def get_post_signal_keyboard(market_name):
 
 # --- دالة جلب الأسعار والشموع الحية لمنصة Expert Option ---
 def get_expert_option_candles(market_name):
+    print(f"--- [EXPERT OPTION LIVE] جاري سحب شموع السوق: {market_name} ---")
     formatted_candles = []
     try:
         asset_symbol = str(market_name).upper().replace("/", "").strip()
