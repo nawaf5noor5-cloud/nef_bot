@@ -801,7 +801,7 @@ def get_expert_option_candles(market_name):
         
         # رابط الاتصال أو الـ API الخاص بسحب الشموع (يتم توجيهه بالتوكن والرمز)
         # ملاحظة: يمكنك تعديل الرابط أو الهيدر بحسب نقطة النهاية (Endpoint) الفعلية للخدمة
-        url = f"https://api.expertoption.com/v1/candles" # مثال على نقطة النهاية
+        url = f"https://app.eobroker.com/v1/candles"
         headers = {
             "Authorization": f"Bearer {EXPERT_OPTION_TOKEN}",
             "Content-Type": "application/json"
