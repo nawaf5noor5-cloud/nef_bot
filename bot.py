@@ -140,27 +140,27 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
             closes = [float(c.get('close', 100.0)) for c in candles_data if isinstance(c, dict)]
             if not closes:
                 closes = [100.0, 101.0]
-            
+
             last_close = closes[-1]
             first_close = closes[0]
             sma = sum(closes) / len(closes)
             price_diff = last_close - first_close
-            
+
             ema_fast = closes[-1] * 0.5 + closes[-2] * 0.5 if len(closes) > 1 else closes[-1]
             ema_slow = sum(closes[-5:]) / len(closes[-5:]) if len(closes) >= 5 else sma
             macd_val = ema_fast - ema_slow
 
             if last_close >= sma and macd_val >= 0:
                 decision_type = "شراء (CALL) 🟢"
-                trend = "صعود قوي"
+                trend = "صعود قوي 📈"
                 base_score = 86
             elif last_close < sma and macd_val < 0:
                 decision_type = "بيع (PUT) 🔴"
-                trend = "هبوط قوي"
+                trend = "هبوط قوي 📉"
                 base_score = 83
             else:
                 decision_type = "شراء (CALL) 🟢" if last_close >= sma else "بيع (PUT) 🔴"
-                trend = "تذبذب استباقي"
+                trend = "تذبذب استباقي ⚠️"
                 base_score = 78
 
             sma_pct = min(max(int(base_score + (last_close - sma) * 200), 70), 98)
@@ -173,10 +173,10 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
                 'Fractals': f"{fractals_pct}%"
             }
         else:
-            trend = "استقرار تداولي"
+            trend = "استقرار تداولي ⚖️"
             price_diff = 0.0
             decision_type = "شراء (CALL) 🟢"
-            indicators = {'SMA': "85%", 'MACD': "84%", 'Fractals': "88%"}
+            indicators = {'SMA': '85%', 'MACD': '84%', 'Fractals': '88%'}
 
         # 2. تحديد حالة السوق ومؤشر التقلب
         try:
@@ -189,8 +189,6 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         analysis_percentage = sum(numeric_scores) // len(numeric_scores)
 
         # 3. معالجة المدة الزمنية ديناميكياً (حسب اختيارك اليدوي أو التلقائي)
-        time_type_text = "تلقائي (ذكاء البوت) ⚡️" if time_mode == "auto" else "يدوي ⏳"
-        
         if time_mode == "auto":
             sec_num = 90 if "نشط" in volatility_status else 180
         else:
@@ -210,8 +208,10 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
             secs = sec_num % 60
             final_duration = f"{mins} دقيقة و {secs} ثانية"
 
+        time_type_text = "تلقائي (ذكاء البوت) ⚡️" if time_mode == "auto" else "يدوي 🛠"
+
         # بناء التقرير النهائي بالترتيب والشروط المطلوبة
-    report = f"""📊 تقرير التحليل الفني 📈
+        report = f"""📊 تقرير التحليل الفني 📈
 
 🏛 السوق / الأصل: {str(market_name).upper()}
 ⏰ المدة الزمنية: {final_duration}
@@ -230,11 +230,11 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
 📌 ملاحظة: تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.
 ⚠️ التنبيه: التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.
 """
-    return report
+        return report
 
-except Exception as e:
-    print(f"CRITICAL ERROR in generate_smart_signal: {e}")
-    return f"حدث خطأ أثناء معالجة التحليل: {str(e)}"
+    except Exception as e:
+        print(f"CRITICAL ERROR in generate_smart_signal: {e}")
+        return f"حدث خطأ أثناء معالجة التحليل: {str(e)}"
         
 def calculate_volatility(indicators):
     """حساب مؤشر التقلب وحالة السوق بناء على متوسط قوة المؤشرات بدقة متنامية"""
