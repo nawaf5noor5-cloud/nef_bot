@@ -277,7 +277,7 @@ def advanced_expert_indicator_engine(is_buy_trend, market_name=""):
         "CCI": min(max(base_val - 1, 10), 99),
         "Williams": min(max(base_val + 4, 10), 99)
     }
-      except Exception as e:
+    except Exception as e:
         print(f"Error fetching live data for {market_name}: {e}")
 
     # للأصول الابتكارية أو في حال تعذر الجلب #
