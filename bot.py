@@ -912,11 +912,11 @@ async def handle_time_selection_callback(update, context):
             await query.edit_message_text(text=recommendation, reply_markup=reply_markup, parse_mode="Markdown")
             
     except Exception as e:
-        print(f"ERROR in handle_time_selection_callback: {e}")
-        try:
-            await query.edit_message_text(text="⚠️ حدث خطأ مؤقت أثناء معالجة الطلب، يرجى المحاولة مرة أخرى.")
-        except:
-            pass
+    print(f"ERROR in handle_time_selection_callback: {e}")
+    try:
+        await query.edit_message_text(text="⚠️ حدث خطأ مؤقت أثناء معالجة الطلب، يرجى المحاولة مرة أخرى.")
+    except:
+        pass
 
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
