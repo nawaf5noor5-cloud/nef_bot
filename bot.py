@@ -379,10 +379,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("market_"):
         market_name = data.split("_")[1]
         user_selections[user_id] = {"market": market_name}
-        keyboard = [[InlineKeyboardButton(tf, callback_data=f"tf_{tf}")] for tf in TIMEFRAMES]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        # استخدام دالة الأزرار الجديدة لتوليد خيارات (تلقائي / يدوي والثواني)
+        reply_markup = get_time_selection_keyboard(market_name)
+        
         await query.edit_message_text(
-            f"⏱️ **السوق المختار:** {market_name}\nالرجاء تحديد الإطار الزمني:",
+            text=f"📊 **السوق المختار:** {market_name.upper()}\nالرجاء اختيار نظام الوقت للصفقة:",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
