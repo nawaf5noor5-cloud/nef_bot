@@ -30,10 +30,15 @@ USERS_FILE = os.path.join(BASE_DIR, "allowed_users.json")
 DAILY_ANALYSES_COUNT = 0
 
 MARKETS = [
+    # 💶 العملات الأجنبية (Forex)
     "eur/usd",
+    "gbp/usd",
+    "gbp/chf",
+    "gbp/cad",
     "usd/chf",
     "usd/jpy",
-    "gbp/cad",
+    
+    # 📊 المؤشرات والأصول الخاصة (Indices & Special Assets)
     "football index",
     "luxury index",
     "camel race index",
@@ -164,26 +169,46 @@ def calculate_volatility(candles_data):
         
     return volatility_state, market_state
 
-# --- دالة إصدار التقرير النهائي الذكي ---
 def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
     try:
+        # --- العمليات الحسابية والتحليلات تتم في الخلفية ---
         sma_val = calculate_sma_percentage(candles_data)
         macd_val = calculate_macd_percentage(candles_data)
         fractals_val = calculate_fractals_percentage(candles_data)
+        rsi_val = calculate_rsi(candles_data)
+        bb_status = calculate_bollinger_bands(candles_data)
+        support_level, resistance_level = calculate_support_resistance(candles_data)
         
-        total_score = int((sma_val + macd_val + fractals_val) / 3)
+        # وزن نسبة RSI في القرار الخلفي
+        rsi_score = 100 if rsi_val < 30 else (0 if rsi_val > 70 else 50)
+        
+        # حساب النسبة النهائية والقرار بالخلفية
+        total_score = int((sma_val + macd_val + fractals_val + rsi_score) / 4)
         decision = "شراء (CALL) 🟢" if total_score >= 50 else "بيع (PUT) 🔴"
         
         volatility_status, market_status = calculate_volatility(candles_data)
 
+        # المنطق الذكي للوقت التلقائي (يعمل بالخلفية بناءً على تشبعات RSI والتقلبات)
         if time_mode == "auto":
-            sec_num = 90 if "قوية" in volatility_status or "عالي" in volatility_status else 180
+            if "عالي" in volatility_status or rsi_val > 75 or rsi_val < 25:
+                selected_sec = random.choice([30, 45, 60])
+                timing_reason = "خاطف وسريع"
+            elif "متوسط" in volatility_status:
+                selected_sec = random.choice([90, 120])
+                timing_reason = "متوسط المدى"
+            else:
+                selected_sec = random.choice([150, 180])
+                timing_reason = "طتؤكد الاتجاه الهادئ"
+            sec_num = selected_sec
         else:
             try:
                 sec_num = int(manual_seconds)
+                timing_reason = "يدوي"
             except:
                 sec_num = 60
+                timing_reason = "افتراضي"
 
+        # تنسيق عرض الوقت
         if sec_num < 60:
             final_duration = f"{sec_num} ثانية"
         elif sec_num == 60:
@@ -195,37 +220,53 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
             secs = sec_num % 60
             final_duration = f"{mins} دقيقة و {secs} ثانية"
 
-        time_type_text = "تلقائي (ذكاء البوت) ⚡️" if time_mode == "auto" else "يدوي 🛠"
+        time_type_text = f"تلقائي ذكي ⚡️" if time_mode == "auto" else "يدوي 🛠"
 
+        # --- التقرير النهائي النظيف (بدون إظهار تفاصيل الخلفية) ---
         report = f"""📊 تقرير التحليل الفني 📈
 
 🏛 السوق / الأصل: {str(market_name).upper()}
 ⏰ المدة الزمنية: {final_duration}
 🎯 نسبة قوة التحليل: {total_score}% 📈
 ⚡️ القرار النهائي: {decision}
-⏱ نوع الوقت: {time_type_text} ⚡️
+⏱ نوع الوقت: {time_type_text}
 
 🌡 حالة السوق: {market_status}
 🌊 مؤشر التقلب: {volatility_status}
 
-🏆 أقوى 3 مؤشرات داعمة:
-◼️ SMA: {sma_val}%
-◼️ MACD: {macd_val}%
-◼️ Fractals: {fractals_val}%
-
-📌 ملاحظة: تم تحليل باقي المؤشرات في الخلفية بدقة فائقة.
-⚠️ التنبيه: التداول ينطوي على مخاطر، يرجى الالتزام بإدارة رأس المال.
+⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
 """
         return report
     except Exception as e:
         print(f"CRITICAL ERROR in generate_smart_signal: {e}")
         return f"حدث خطأ أثناء معالجة التحليل: {str(e)}"
 
-# --- لوحة المفاتيح والأزرار التفاعلية ---
+# --- لوحة المفاتيح والازرار التفاعلية ---
 def get_markets_keyboard():
     keyboard = []
+    
+    # قاموس لتحديد الإيموجي المناسب حسب نوع الأصل أو العملة
+    market_emojis = {
+        "eur/usd": "💶🇺🇸",
+        "gbp/usd": "💷🇺🇸",
+        "gbp/chf": "💷🇨🇭",
+        "gbp/cad": "💷🇨🇦",
+        "usd/chf": "🇺🇸🇨🇭",
+        "usd/jpy": "🇺🇸🇯🇵",
+        "football index": "⚽️",
+        "luxury index": "💎",
+        "camel race index": "🐪",
+        "ai index": "🤖",
+        "cricket index": "🏏",
+        "smarty": "🧠",
+        "intel": "💻"
+    }
+    
     for market in MARKETS:
-        keyboard.append([InlineKeyboardButton(market.upper(), callback_data=f"market_{market}")])
+        emoji = market_emojis.get(market.lower(), "📊")
+        display_name = f"{emoji} {market.upper()}"
+        keyboard.append([InlineKeyboardButton(display_name, callback_data=f"market_{market}")])
+        
     keyboard.append([InlineKeyboardButton("🏠 القائمة الرئيسية", callback_data="main_menu")])
     return InlineKeyboardMarkup(keyboard)
     
