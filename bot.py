@@ -418,7 +418,7 @@ async def handle_time_selection_callback(update: Update, context: ContextTypes.D
         
         if data.startswith("time_auto_"):
             market_name = data.replace("time_auto_", "")
-            await query.edit_message_text(text=f"📊 جارٍ تحليل السوق `{market_name.upper}` بالذكاء التلقائي...")
+            await query.edit_message_text(text=f"🧠 **جاري تحليل السوق `{market_name.upper()}` بالذكاء الاصطناعي واختيار أفضل فترة زمنية...**", parse_mode="Markdown")
             time.sleep(1.0)
             
             candles_data = get_market_candles(market_name)
@@ -430,7 +430,7 @@ async def handle_time_selection_callback(update: Update, context: ContextTypes.D
             parts = data.split("_")
             market_name = parts[2]
             seconds = int(parts[3])
-            await query.edit_message_text(text=f"📊 جارٍ تحليل السوق `{market_name.upper}` على وقت `{seconds} ثانية`...")
+            await query.edit_message_text(text=f"📊 جاري تحليل السوق `{market_name.upper()}` على وقت `{seconds} ثانية`...", parse_mode="Markdown")
             time.sleep(1.0)
             
             candles_data = get_market_candles(market_name)
