@@ -184,6 +184,63 @@ def calculate_volatility(candles_data):
 ⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
 """
 
+def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
+    try:
+        sma_val = calculate_sma_percentage(candles_data) if 'calculate_sma_percentage' in globals() else 50
+        macd_val = calculate_macd_percentage(candles_data) if 'calculate_macd_percentage' in globals() else 50
+        fractals_val = calculate_fractals_percentage(candles_data) if 'calculate_fractals_percentage' in globals() else 50
+        rsi_val = calculate_rsi(candles_data) if 'calculate_rsi' in globals() else 50
+        
+        rsi_score = 100 if rsi_val < 30 else (0 if rsi_val > 70 else 50)
+        total_score = int((sma_val + macd_val + fractals_val + rsi_score) / 4)
+        decision = "شراء (CALL) 🟢" if total_score >= 50 else "بيع (PUT) 🔴"
+        
+        volatility_status = "متوسط"
+        market_status = "مستقر"
+        if 'calculate_volatility' in globals():
+            volatility_status, market_status = calculate_volatility(candles_data)
+
+        if time_mode == "auto":
+            if rsi_val > 75 or rsi_val < 25:
+                sec_num = 60
+            else:
+                sec_num = 120
+        else:
+            try:
+                sec_num = int(manual_seconds)
+            except:
+                sec_num = 60
+
+        if sec_num < 60:
+            final_duration = f"{sec_num} ثانية"
+        elif sec_num == 60:
+            final_duration = "دقيقة واحدة"
+        elif sec_num % 60 == 0:
+            final_duration = f"{sec_num // 60} دقائق"
+        else:
+            final_duration = f"{sec_num // 60} دقيقة و {sec_num % 60} ثانية"
+
+        time_type_text = "تلقائي ذكي ⚡️" if time_mode == "auto" else "يدوي 🛠"
+        clean_market = str(market_name).upper()
+
+        report = f"""📊 تقرير التحليل الفني
+
+🏛 السوق / الأصل: {clean_market}
+⏰ المدة الزمنية: {final_duration}
+🎯 نسبة قوة التحليل: {total_score}%
+⚡️ القرار النهائي: {decision}
+⏱ نوع الوقت: {time_type_text}
+
+🌡 حالة السوق: {market_status}
+🌊 مؤشر التقلب: {volatility_status}
+
+⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
+"""
+        return report
+    except Exception as e:
+        print(f"CRITICAL ERROR in generate_smart_signal: {e}")
+        return f"حدث خطأ أثناء معالجة التحليل: {str(e)}"
+
 # --- لوحة المفاتيح والازرار التفاعلية ---
 def get_markets_keyboard():
     keyboard = []
