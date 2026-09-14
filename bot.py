@@ -169,60 +169,7 @@ def calculate_volatility(candles_data):
         
     return volatility_state, market_state
 
-def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
-    try:
-        # --- العمليات الحسابية والتحليلات تتم في الخلفية ---
-        sma_val = calculate_sma_percentage(candles_data)
-        macd_val = calculate_macd_percentage(candles_data)
-        fractals_val = calculate_fractals_percentage(candles_data)
-        rsi_val = calculate_rsi(candles_data)
-        bb_status = calculate_bollinger_bands(candles_data)
-        support_level, resistance_level = calculate_support_resistance(candles_data)
-        
-        # وزن نسبة RSI في القرار الخلفي
-        rsi_score = 100 if rsi_val < 30 else (0 if rsi_val > 70 else 50)
-        
-        # حساب النسبة النهائية والقرار بالخلفية
-        total_score = int((sma_val + macd_val + fractals_val + rsi_score) / 4)
-        decision = "شراء (CALL) 🟢" if total_score >= 50 else "بيع (PUT) 🔴"
-        
-        volatility_status, market_status = calculate_volatility(candles_data)
-
-        # المنطق الذكي للوقت التلقائي (يعمل بالخلفية بناءً على تشبعات RSI والتقلبات)
-        if time_mode == "auto":
-            if "عالي" in volatility_status or rsi_val > 75 or rsi_val < 25:
-                selected_sec = random.choice([30, 45, 60])
-                timing_reason = "خاطف وسريع"
-            elif "متوسط" in volatility_status:
-                selected_sec = random.choice([90, 120])
-                timing_reason = "متوسط المدى"
-            else:
-                selected_sec = random.choice([150, 180])
-                timing_reason = "طتؤكد الاتجاه الهادئ"
-            sec_num = selected_sec
-        else:
-            try:
-                sec_num = int(manual_seconds)
-                timing_reason = "يدوي"
-            except:
-                sec_num = 60
-                timing_reason = "افتراضي"
-
-        # تنسيق عرض الوقت
-        if sec_num < 60:
-            final_duration = f"{sec_num} ثانية"
-        elif sec_num == 60:
-            final_duration = "دقيقة واحدة"
-        elif sec_num % 60 == 0:
-            final_duration = f"{sec_num // 60} دقائق"
-        else:
-            mins = sec_num // 60
-            secs = sec_num % 60
-            final_duration = f"{mins} دقيقة و {secs} ثانية"
-
-        time_type_text = f"تلقائي ذكي ⚡️" if time_mode == "auto" else "يدوي 🛠"
-
-        # --- التقرير النهائي النظيف (بدون إظهار تفاصيل الخلفية) ---
+# --- التقرير النهائي النظيف (بدون إظهار تفاصيل الخلفية) ---
         report = f"""📊 تقرير التحليل الفني 📈
 
 🏛 السوق / الأصل: {str(market_name).upper()}
@@ -236,10 +183,6 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
 
 ⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
 """
-        return report
-    except Exception as e:
-        print(f"CRITICAL ERROR in generate_smart_signal: {e}")
-        return f"حدث خطأ أثناء معالجة التحليل: {str(e)}"
 
 # --- لوحة المفاتيح والازرار التفاعلية ---
 def get_markets_keyboard():
