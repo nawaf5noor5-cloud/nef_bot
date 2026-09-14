@@ -145,6 +145,48 @@ def calculate_fractals_percentage(candles):
     recent_high_diff = highs[-1] - highs[-3] if len(highs) >= 3 else 0
     return min(max(int(50 + (recent_high_diff * 500)), 15), 98)
 
+def calculate_bollinger_percentage(candles):
+    if not candles or len(candles) < 20:
+        return 50
+    closes = [c['close'] for c in candles]
+    period = 20
+    recent_closes = closes[-period:]
+    sma = sum(recent_closes) / period
+    variance = sum([((x - sma) ** 2) for x in recent_closes]) / period
+    std_dev = variance ** 0.5
+    
+    upper_band = sma + (2 * std_dev)
+    lower_band = sma - (2 * std_dev)
+    current_price = closes[-1]
+    
+    if upper_band == lower_band:
+        return 50
+    
+    # نسبة مقياسية لمكان السعر داخل نطاق البولينجر
+    position = (current_price - lower_band) / (upper_band - lower_band)
+    position = max(0.0, min(1.0, position))
+    
+    # إذا اقترب من السفلي (فرصة شراء)، وإذا اقترب من العلوي (فرصة بيع)
+    score = int((1 - position) * 100)
+    return score
+
+def calculate_alligator_percentage(candles):
+    if not candles or len(candles) < 13:
+        return 50
+    closes = [c['close'] for c in candles]
+    # حساب تقريبي لخطوط التمساح (الفك 13، الأسنان 8، الشفاه 5)
+    jaw = sum(closes[-13:]) / 13
+    teeth = sum(closes[-8:]) / 8
+    lips = sum(closes[-5:]) / 5
+    
+    # اتجاه صعودي قوي إذا كانت الشفاه فوق الأسنان والأسنان فوق الفك
+    if lips > teeth > jaw:
+        return 85
+    elif lips < teeth < jaw:
+        return 15
+    else:
+        return 50
+
 def calculate_volatility(candles_data):
     try:
         closes = [c['close'] for c in candles_data] if candles_data else [1.0]
@@ -188,12 +230,31 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         macd_val = calculate_macd_percentage(candles_data)
         fractals_val = calculate_fractals_percentage(candles_data)
         rsi_val = calculate_rsi(candles_data)
+        bb_val = calculate_bollinger_percentage(candles_data)
+        alli_val = calculate_alligator_percentage(candles_data)
         
         rsi_score = 100 if rsi_val < 30 else (0 if rsi_val > 70 else 50)
-        total_score = int((sma_val + macd_val + fractals_val + rsi_score) / 4)
+        
+        # دمج مدروس ومتوازن لجميع المؤشرات لتجنب التلخبط
+        total_score = int((sma_val + macd_val + fractals_val + rsi_score + bb_val + alli_val) / 6)
         decision = "شراء (CALL) 🟢" if total_score >= 50 else "بيع (PUT) 🔴"
         
         volatility_status, market_status = calculate_volatility(candles_data)
+
+        # قائمة المؤشرات وتقييم مدى قوتها (البعد عن الحياد 50)
+        indicators_list = [
+            ("المتوسط المتحرك (SMA)", sma_val),
+            ("الماكدي (MACD)", macd_val),
+            ("الكسور (Fractals)", fractals_val),
+            ("القوة النسبية (RSI)", rsi_val),
+            ("البولينجر باند (Bollinger)", bb_val),
+            ("التمساح (Alligator)", alli_val)
+        ]
+        
+        # اختيار أقوى 3 مؤشرات تعطي دلالة واضحة
+        sorted_indicators = sorted(indicators_list, key=lambda x: abs(x[1] - 50), reverse=True)
+        top_3 = sorted_indicators[:3]
+        indicators_text = "\n".join([f"• {ind[0]}: {ind[1]} بالمئة" for ind in top_3])
 
         if time_mode == "auto":
             if rsi_val > 75 or rsi_val < 25:
@@ -228,6 +289,9 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
 
 🌡 حالة السوق: {market_status}
 🌊 مؤشر التقلب: {volatility_status}
+
+🔥 أقوى 3 مؤشرات داعمة:
+{indicators_text}
 
 ⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
 """
