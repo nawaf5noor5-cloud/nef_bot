@@ -145,6 +145,19 @@ def calculate_fractals_percentage(candles):
     recent_high_diff = highs[-1] - highs[-3] if len(highs) >= 3 else 0
     return min(max(int(50 + (recent_high_diff * 500)), 15), 98)
 
+def calculate_rsi(candles):
+    if not candles or len(candles) < 14:
+        return 50
+    closes = [c['close'] for c in candles]
+    gains = [max(0, closes[i] - closes[i-1]) for i in range(1, len(closes))]
+    losses = [max(0, closes[i-1] - closes[i]) for i in range(1, len(closes))]
+    avg_gain = sum(gains[-14:]) / 14
+    avg_loss = sum(losses[-14:]) / 14
+    if avg_loss == 0:
+        return 100
+    rs = avg_gain / avg_loss
+    return 100 - (100 / (1 + rs))
+
 def calculate_volatility(candles_data):
     try:
         closes = [c['close'] for c in candles_data] if candles_data else [1.0]
@@ -186,19 +199,16 @@ def calculate_volatility(candles_data):
 
 def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
     try:
-        sma_val = calculate_sma_percentage(candles_data) if 'calculate_sma_percentage' in globals() else 50
-        macd_val = calculate_macd_percentage(candles_data) if 'calculate_macd_percentage' in globals() else 50
-        fractals_val = calculate_fractals_percentage(candles_data) if 'calculate_fractals_percentage' in globals() else 50
-        rsi_val = calculate_rsi(candles_data) if 'calculate_rsi' in globals() else 50
+        sma_val = calculate_sma_percentage(candles_data)
+        macd_val = calculate_macd_percentage(candles_data)
+        fractals_val = calculate_fractals_percentage(candles_data)
+        rsi_val = calculate_rsi(candles_data)
         
         rsi_score = 100 if rsi_val < 30 else (0 if rsi_val > 70 else 50)
         total_score = int((sma_val + macd_val + fractals_val + rsi_score) / 4)
         decision = "شراء (CALL) 🟢" if total_score >= 50 else "بيع (PUT) 🔴"
         
-        volatility_status = "متوسط"
-        market_status = "مستقر"
-        if 'calculate_volatility' in globals():
-            volatility_status, market_status = calculate_volatility(candles_data)
+        volatility_status, market_status = calculate_volatility(candles_data)
 
         if time_mode == "auto":
             if rsi_val > 75 or rsi_val < 25:
@@ -223,11 +233,11 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         time_type_text = "تلقائي ذكي ⚡️" if time_mode == "auto" else "يدوي 🛠"
         clean_market = str(market_name).upper()
 
-        report = f"""📊 تقرير التحليل الفني
+        report = f"""📊 تقرير التحليل الفني 📈
 
 🏛 السوق / الأصل: {clean_market}
 ⏰ المدة الزمنية: {final_duration}
-🎯 نسبة قوة التحليل: {total_score}%
+🎯 نسبة قوة التحليل: {total_score}% 📈
 ⚡️ القرار النهائي: {decision}
 ⏱ نوع الوقت: {time_type_text}
 
