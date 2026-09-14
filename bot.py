@@ -208,7 +208,7 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         # اختيار أقوى 3 مؤشرات تعطي دلالة واضحة
         sorted_indicators = sorted(indicators_list, key=lambda x: abs(x[1] - 50), reverse=True)
         top_3 = sorted_indicators[:3]
-        indicators_text = "\n".join([f"• {ind[0]}: {ind[1]} بالمئة" for ind in top_3])
+        indicators_text = "\n".join([f"• {ind[0]}: {int(ind[1])} بالمئة" for ind in top_3])
 
         if time_mode == "auto":
             if rsi_val > 75 or rsi_val < 25:
