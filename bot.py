@@ -182,21 +182,6 @@ def calculate_volatility(candles_data):
         
     return volatility_state, market_state
 
-# --- التقرير النهائي النظيف (بدون إظهار تفاصيل الخلفية) ---
-        report = f"""📊 تقرير التحليل الفني 📈
-
-🏛 السوق / الأصل: {str(market_name).upper()}
-⏰ المدة الزمنية: {final_duration}
-🎯 نسبة قوة التحليل: {total_score}% 📈
-⚡️ القرار النهائي: {decision}
-⏱ نوع الوقت: {time_type_text}
-
-🌡 حالة السوق: {market_status}
-🌊 مؤشر التقلب: {volatility_status}
-
-⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
-"""
-
 def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
     try:
         sma_val = calculate_sma_percentage(candles_data)
