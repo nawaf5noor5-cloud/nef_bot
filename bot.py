@@ -145,6 +145,25 @@ def calculate_fractals_percentage(candles):
     recent_high_diff = highs[-1] - highs[-3] if len(highs) >= 3 else 0
     return min(max(int(50 + (recent_high_diff * 500)), 15), 98)
 
+def calculate_rsi(candles):
+    if not candles or len(candles) < 14:
+        return 50
+    closes = [c['close'] for c in candles]
+    gains = [max(0, closes[i] - closes[i-1]) for i in range(1, len(closes))]
+    losses = [max(0, closes[i-1] - closes[i]) for i in range(1, len(closes))]
+    
+    avg_gain = sum(gains[-14:]) / 14
+    avg_loss = sum(losses[-14:]) / 14
+    
+    if avg_loss == 0:
+        return 100
+        
+    rs = avg_gain / avg_loss
+    rsi_val = 100 - (100 / (1 + rs))
+    
+    # إرجاع القيمة مقربة كعدد صحيح لتجنب الكسور الطويلة في التقارير
+    return int(rsi_val)
+
 def calculate_volatility(candles_data):
     try:
         closes = [c['close'] for c in candles_data] if candles_data else [1.0]
@@ -169,25 +188,13 @@ def calculate_volatility(candles_data):
         
     return volatility_state, market_state
 
-def calculate_rsi(candles):
-    if not candles or len(candles) < 14:
-        return 50
-    closes = [c['close'] for c in candles]
-    gains = [max(0, closes[i] - closes[i-1]) for i in range(1, len(closes))]
-    losses = [max(0, closes[i-1] - closes[i]) for i in range(1, len(closes))]
-    avg_gain = sum(gains[-14:]) / 14
-    avg_loss = sum(losses[-14:]) / 14
-    if avg_loss == 0:
-        return 100
-    rs = avg_gain / avg_loss
-    return 100 - (100 / (1 + rs))
-
 def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=60):
     try:
         sma_val = calculate_sma_percentage(candles_data)
         macd_val = calculate_macd_percentage(candles_data)
         fractals_val = calculate_fractals_percentage(candles_data)
         rsi_val = calculate_rsi(candles_data)
+        
         
         rsi_score = 100 if rsi_val < 30 else (0 if rsi_val > 70 else 50)
         
