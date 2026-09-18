@@ -177,32 +177,35 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         
         raw_score = (sma_val + macd_val + fractals_val) / 3
 
-    if raw_score >= 50:
-    decision = "شراء (CALL) 🟢"
-    # تحويل النتيجة إلى مقياس قوة من 50 إلى 99 لصالح الصعود
-    total_score = int(50 + (raw_score - 50)) 
-    if total_score > 99: total_score = 99
-    else:
-    decision = "بيع (PUT) 🔴"
-    # تحويل النتيجة إلى مقياس قوة من 50 إلى 99 لصالح الهبوط (كلما ابتعدنا عن 50 زادت القوة)
-    total_score = int(50 + (50 - raw_score))
-    if total_score > 99: total_score = 99
+        if raw_score >= 50:
+            decision = "شراء (CALL) 🟢"
+            total_score = int(50 + (raw_score - 50))
+            if total_score > 99: 
+                total_score = 99
+        else:
+            decision = "بيع (PUT) 🔴"
+            total_score = int(50 + (50 - raw_score))
+            if total_score > 99: 
+                total_score = 99
         
         volatility_status, market_status = calculate_volatility(candles_data)
 
-        # قائمة المؤشرات المعتمدة وتقييم مدى قوتها (البعد عن الحياد 50)
         indicators_list = [
             ("المتوسط المتحرك (SMA)", sma_val),
             ("الماكدي (MACD)", macd_val),
-            ("الكسور (Fractals)", fractals_val),
+            ("الكسور (Fractals)", fractals_val)
         ]
         
-        # اختيار أقوى 3 مؤشرات تعطي دلالة واضحة
         sorted_indicators = sorted(indicators_list, key=lambda x: abs(x[1] - 50), reverse=True)
         top_3 = sorted_indicators[:3]
         indicators_text = "\n".join([f"• {ind[0]}: {int(ind[1])} بالمئة" for ind in top_3])
 
         if time_mode == "auto":
+            try:
+                sec_num = int(manual_seconds)
+            except:
+                sec_num = 60
+        else:
             try:
                 sec_num = int(manual_seconds)
             except:
@@ -224,14 +227,14 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
 
 🏛 السوق / الأصل: {clean_market}
 ⏰ المدة الزمنية: {final_duration}
-🎯 نسبة قوة التحليل: {total_score} 📈
+🎯 نسبة قوة التحليل: {total_score} بالمئة 📈
 ⚡️ القرار النهائي: {decision}
 ⏱ نوع الوقت: {time_type_text}
 
 🌡 حالة السوق: {market_status}
 🌊 مؤشر التقلب: {volatility_status}
 
-🔥 أقوى 3 مؤشرات داعمة:
+🔥 أقوى 3 مؤشرات دلالة واضحة:
 {indicators_text}
 
 ⚠️ التنبيه: التداول ينطوي على مخاطر عالية، يرجى الالتزام التام بإدارة رأس المال.
