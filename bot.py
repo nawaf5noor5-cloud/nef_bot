@@ -177,12 +177,12 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         
         raw_score = (sma_val + macd_val + fractals_val) / 3
 
-if raw_score >= 50:
+    if raw_score >= 50:
     decision = "شراء (CALL) 🟢"
     # تحويل النتيجة إلى مقياس قوة من 50 إلى 99 لصالح الصعود
     total_score = int(50 + (raw_score - 50)) 
     if total_score > 99: total_score = 99
-else:
+    else:
     decision = "بيع (PUT) 🔴"
     # تحويل النتيجة إلى مقياس قوة من 50 إلى 99 لصالح الهبوط (كلما ابتعدنا عن 50 زادت القوة)
     total_score = int(50 + (50 - raw_score))
