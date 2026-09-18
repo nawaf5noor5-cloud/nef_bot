@@ -21,7 +21,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 log = logging.getLogger(__name__)
 
 # --- الإعدادات والمتغيرات العامة ---
-INITIAL_ADMIN_ID = "420693139"  # معرف المالك
+INITIAL_ADMIN_ID = "8925385879"  # معرف المالك
 TOKEN = "8928448626:AAE6sxfOjTZV_AyuJEyyahg6rpwdXW8dsXg"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
