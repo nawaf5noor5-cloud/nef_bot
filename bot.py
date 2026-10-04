@@ -175,7 +175,22 @@ def generate_smart_signal(market_name, time_mode, candles_data, manual_seconds=6
         macd_val = calculate_macd_percentage(candles_data)
         fractals_val = calculate_fractals_percentage(candles_data)
         
+        # تحليل اتجاه آخر 15 دقيقة في الخلفية بشكل خفي
+        trend_direction, trend_score = analyze_market_trend_15m(candles_data)
+        
         raw_score = (sma_val + macd_val + fractals_val) / 3
+        
+        # تطبيق فلتر الاتجاه الخفي لتعزيز القرار والنسبة
+        if "صاعد" in trend_direction:
+            if raw_score >= 50:
+                raw_score = max(raw_score, trend_score)
+            else:
+                raw_score += 5 
+        elif "هابط" in trend_direction:
+            if raw_score < 50:
+                raw_score = min(raw_score, (100 - trend_score))
+            else:
+                raw_score -= 5
 
         if raw_score >= 50:
             decision = "شراء (CALL) 🟢"
